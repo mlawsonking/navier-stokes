@@ -12,6 +12,11 @@ It does **not** prove Navier--Stokes regularity or blow-up. It computes exact Fo
 - velocity/vorticity line-bundle defect
 - helical-coordinate diagnostics
 
+
+## Fresh-chat handoff
+
+Read `HANDOFF.md` first. For a new ChatGPT project/chat, upload the zip and paste `NEXT_CHAT_PROMPT.md`.
+
 ## Run
 
 ```bash
@@ -34,49 +39,39 @@ Given arbitrary strong 3D first-shell transfer, the full Navier--Stokes leakage 
 
 This repo currently verifies the symmetric seed case and surfaces the next computational questions.
 
-## Added experiment: arbitrary first-handoff search
+## Latest continuation notes
 
-Run:
+The experiments have now separated the first-handoff obstruction into regimes:
 
-```bash
-PYTHONPATH=. python experiments/optimize_first_handoff.py --samples 40000 --eta 0.8 --min-f1-energy 0.2 --min-d-ratio 0.3 --max-l-over-d 5
-PYTHONPATH=. python experiments/optimize_first_handoff.py --samples 20000 --complex --eta 0.8 --min-f1-energy 0.2 --min-d-ratio 0.3 --max-l-over-d 5
-```
+1. **Real / non-helical cyclic geometries**: robust comparable-collision vorticity miss stays near `0.05`, with radius relative variance near `0.06`.
+2. **Pure-helical line-bundle geometries**: polarization/vorticity miss can collapse near zero, but the closure drifts toward a near-ray frequency set.
+3. **Full-vector helical closure**: if the output is not projected back to a pure helical line, helicity purity decays and robust vorticity miss grows rapidly.
 
-Purpose: vary arbitrary first-shell amplitudes
+The new helical closure diagnostics support the following working trichotomy:
 
 ```text
-e1 -> (0,A,B), e2 -> (C,0,D), e3 -> (E,F,0)
+real/scalar cascade          -> robust line-bundle/vorticity defect
+full-vector helical fan      -> growing polarization/vorticity defect
+projected pure-helical fan   -> near-ray collapse and normalized coefficient depletion
 ```
 
-and test whether strong balanced first-handoffs can drive the second-stage radius/polarization/vorticity defects near zero.
+Additional experiment files:
 
-Current constrained random-search result: under balanced, non-tiny forward-transfer constraints, the best real sample found had vorticity line miss ≈ 0.032 and radius-relative variance ≈ 0.063. The best complex sample found had vorticity line miss ≈ 0.035 and radius-relative variance ≈ 0.062. This is evidence, not proof, for a positive first-handoff defect under nondegenerate transfer constraints.
+- `experiments/robust_optimize_first_handoff.py` — robust optimization using only comparable multi-path collisions.
+- `experiments/classify_minima.py` — classifies low-defect optimizer minima against cyclic/off-cycle parent-polarization patterns.
+- `experiments/helical_line_bundle_scan.py` — scans pure-helicity sign assignments on the first fan.
+- `experiments/helical_radius_closure.py` — iterates projected/full-vector helical closures and reports radius/linearity/coefficient diagnostics.
+- `experiments/helical_closure_sweep.py` — checks whether projected-helical near-ray collapse is stable across cutoffs and mode caps.
+- `experiments/near_ray_coefficient_scan.py` — direct controlled scan showing normalized NS coefficients decay like `N^-1` for bounded-defect near-ray mode pairs, while transverse control interactions remain `O(1)`.
 
-## Robust metric correction and helical scan (latest)
+Key recent outputs:
 
-Earlier optimization used global collision miss over every formal multi-path output.  That metric was exploitable: tiny off-cycle perturbations created many fake collision groups where one path dominated and the other was negligible, diluting the average defect.
+- `helical_closure_sweep.txt`
+- `near_ray_coefficient_scan.txt`
+- `helical_projected_nocap_rel1e4.txt`
 
-New robust script:
+The strongest current theorem target is now the **Helical Escape Trichotomy**:
 
-```bash
-PYTHONPATH=. python experiments/robust_optimize_first_handoff.py --runs 3 --eta 0.8 --min-second-ratio 0.1 --min-f1-energy 0.2 --min-d-ratio 0.3 --max-l-over-d 5 --json robust_de_real_output.json
-```
+> A strong leakage-absorbing first handoff either develops robust polarization/vorticity defect, or stays nearly pure-helical and collapses toward near-ray geometry, causing normalized triad coefficient depletion, or suppresses a significant fraction of forced output.
 
-It counts only comparable path collisions where the second-largest path energy is at least a chosen fraction of the largest.  Under this metric, the best real search found robust vorticity line miss ≈ 0.049 and radius-relative variance ≈ 0.060.  A short complex search found robust vorticity line miss ≈ 0.051 and radius-relative variance ≈ 0.061.
-
-New classifier:
-
-```bash
-PYTHONPATH=. python experiments/classify_minima.py robust_de_real_output.json robust_de_complex_output.json --cycle-scan --eta 0.8 --min-f1-energy 0.2 --min-d-ratio 0.3 --max-l-over-d 5
-```
-
-The robust optimizer no longer collapses exactly to the pure 3-cycle; it keeps roughly 92–93% of parameter energy in one 3-cycle and 7–8% off-cycle.  This suggests the best escape tries to perturb a cyclic parent-polarization pattern while still producing comparable collision defects.
-
-New helical scan:
-
-```bash
-PYTHONPATH=. python experiments/helical_line_bundle_scan.py --min-second-ratio 0.1 --json helical_line_scan_output.json
-```
-
-This enumerates all 4096 pure-helicity sign assignments on F1 ∪ D ∪ L.  Best all-same-helicity assignments have robust vorticity miss ≈ 0.00483 and radius-relative variance ≈ 0.0385, with output helicity purity ≈ 0.995.  This is an important escape candidate: helical line bundles reduce polarization defect strongly, but they do not eliminate radius fan / heat-detuning defect.  The theorem target therefore shifts from “polarization defect alone” to “helicity can reduce polarization defect, but full-NS leakage still forces radius spread or other maintenance cost.”
+This is still far from a Clay proof. The immediate finite theorem target is to prove the controlled near-ray coefficient depletion formula and then connect it to the observed projected-helical closure collapse.
