@@ -1,0 +1,57 @@
+Differential evolution first-handoff escape search
+complex=False runs=2 eta=0.8 min_f1=0.2 min_d_ratio=0.3 max_l_over_d=5.0
+weights: vort=1.0 vel=0.0 rad=0.15 l_over_d=0.0
+----------------------------------------------------------------------------------------------------
+run=1 seed=500 optimizer=de+nelder-mead fun=0.04056221 success=False
+  objective(metrics)=0.04056221 vel_miss=0.029563292 vort_miss=0.031252579
+  radius_rel_var=0.062064207 radius_classes=9 collision_modes=25 collision_paths=63
+  f1_energy=0.3250233 f1_minmax=0.8000001 d_energy=0.046078139 l_energy=0.11067378 l_over_d=2.4018717
+  x=[ 2.155111 -0.000802  0.000248  2.693888 -2.155124 -0.000341]
+----------------------------------------------------------------------------------------------------
+run=2 seed=501 optimizer=de+nelder-mead fun=0.04056912 success=False
+  objective(metrics)=0.04056912 vel_miss=0.029571303 vort_miss=0.031259542
+  radius_rel_var=0.062063852 radius_classes=9 collision_modes=25 collision_paths=63
+  f1_energy=0.32500025 f1_minmax=0.8 d_energy=0.046071627 l_energy=0.11066606 l_over_d=2.4020436
+  x=[-0.001212 -2.774934  2.219976  0.000937  0.024147 -2.219958]
+====================================================================================================
+BEST
+{
+  "seed": 500,
+  "optimizer": "de+nelder-mead",
+  "fun": 0.04056220964874083,
+  "success": false,
+  "de_message": "Maximum number of iterations has been exceeded.",
+  "metrics": {
+    "idx": 0,
+    "objective": 0.04056220964874083,
+    "vel_miss": 0.02956329212371264,
+    "vort_miss": 0.03125257857496525,
+    "collision_energy": 0.10547013160015312,
+    "collision_modes": 25,
+    "collision_paths": 63,
+    "radius_rel_var": 0.06206420715850383,
+    "radius_classes": 9,
+    "f1_energy": 0.3250232971431107,
+    "f1_minmax": 0.8000001039197806,
+    "d_energy": 0.046078139127289044,
+    "l_energy": 0.11067377843509314,
+    "l_over_d": 2.4018717016622304,
+    "params": [
+      2.1551108009176083,
+      -0.0008015095334712282,
+      0.0002477219637167161,
+      2.6938879532966653,
+      -2.1551243071455635,
+      -0.00034133198757528067
+    ]
+  },
+  "x": [
+    2.1551108009176083,
+    -0.0008015095334712282,
+    0.0002477219637167161,
+    2.6938879532966653,
+    -2.1551243071455635,
+    -0.00034133198757528067
+  ]
+}
+wrote de_real_output.json

@@ -1,0 +1,42 @@
+[
+  {
+    "seed": 1505,
+    "fun": 0.053506209691875986,
+    "success": false,
+    "message": "Maximum number of iterations has been exceeded.",
+    "metrics": {
+      "objective": 0.053506209691875986,
+      "robust_vel_miss": 0.04366787569037742,
+      "robust_vort_miss": 0.044371057122331685,
+      "comparable_collision_energy": 0.0669498344438931,
+      "comparable_collision_modes": 22,
+      "comparable_collision_paths": 54,
+      "all_collision_modes": 25,
+      "all_collision_paths": 63,
+      "radius_rel_var": 0.06090101713029532,
+      "radius_classes": 9,
+      "f1_energy": 0.2705101622877447,
+      "f1_minmax": 0.8000039371985329,
+      "d_energy": 0.031780189859380005,
+      "l_energy": 0.09438665742311095,
+      "l_over_d": 2.969984063680775,
+      "d_ratio": 0.4342994881637618,
+      "params": [
+        1.9226562165316654,
+        -0.4877734754099907,
+        0.4169283178059835,
+        -1.5720186682233814,
+        2.2233581056977947,
+        0.4971581913011589
+      ]
+    },
+    "x": [
+      1.9226562165316654,
+      -0.4877734754099907,
+      0.4169283178059835,
+      -1.5720186682233814,
+      2.2233581056977947,
+      0.4971581913011589
+    ]
+  }
+]

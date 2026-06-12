@@ -1,0 +1,72 @@
+Random search for low-defect strong first handoffs
+samples=20000 complex=False eta=0.5 min_f1=0.1 min_d_ratio=0.25 max_l_over_d=10.0 best_count=20
+----------------------------------------------------------------------------------------
+rank=1 idx=10863 objective=0.0322725
+  vel_miss=0.02541 vort_miss=0.0249195 collision_energy=0.00934923
+  radius_rel_var=0.0490204 radius_classes=9
+  f1_energy=0.116272 f1_minmax=0.510331
+  d_energy=0.00485216 l_energy=0.0447918 l_over_d=9.23132
+  params=[-1.05041  0.04805  1.33016 -0.85571  1.81142  0.33681]
+----------------------------------------------------------------------------------------
+rank=2 idx=2796 objective=0.0328968
+  vel_miss=0.0266425 vort_miss=0.026082 collision_energy=0.00773986
+  radius_rel_var=0.045432 radius_classes=9
+  f1_energy=0.104863 f1_minmax=0.569008
+  d_energy=0.00448994 l_energy=0.0377408 l_over_d=8.40563
+  params=[-0.8933  -0.61096  0.57456  0.09821  0.18863 -1.37431]
+----------------------------------------------------------------------------------------
+rank=3 idx=8881 objective=0.0338714
+  vel_miss=0.0276852 vort_miss=0.0267085 collision_energy=0.00789498
+  radius_rel_var=0.0477527 radius_classes=9
+  f1_energy=0.10678 f1_minmax=0.551215
+  d_energy=0.00462596 l_energy=0.0334939 l_over_d=7.24043
+  params=[-0.95812 -1.17105  0.25498 -1.51031  0.67631 -0.01275]
+----------------------------------------------------------------------------------------
+rank=4 idx=2540 objective=0.0341375
+  vel_miss=0.0273281 vort_miss=0.0271873 collision_energy=0.0153865
+  radius_rel_var=0.0463345 radius_classes=9
+  f1_energy=0.150211 f1_minmax=0.501836
+  d_energy=0.00895293 l_energy=0.0532373 l_over_d=5.94635
+  params=[-0.70558 -0.55428 -0.57155 -0.07002  0.01503 -1.2786 ]
+----------------------------------------------------------------------------------------
+rank=5 idx=9710 objective=0.0347709
+  vel_miss=0.0248122 vort_miss=0.0264177 collision_energy=0.0626819
+  radius_rel_var=0.0556882 radius_classes=9
+  f1_energy=0.268018 f1_minmax=0.563949
+  d_energy=0.0292377 l_energy=0.100834 l_over_d=3.44877
+  params=[ 0.25441 -1.38679  1.41755 -0.10839 -0.1063  -2.50169]
+----------------------------------------------------------------------------------------
+rank=6 idx=6372 objective=0.0348956
+  vel_miss=0.0247419 vort_miss=0.0262125 collision_energy=0.0579454
+  radius_rel_var=0.0578875 radius_classes=9
+  f1_energy=0.263725 f1_minmax=0.511506
+  d_energy=0.0272992 l_energy=0.106589 l_over_d=3.90449
+  params=[ 0.09298 -0.85623  1.09029 -0.07673  0.24384  1.70389]
+----------------------------------------------------------------------------------------
+rank=7 idx=5043 objective=0.0348993
+  vel_miss=0.0246598 vort_miss=0.0260931 collision_energy=0.0661323
+  radius_rel_var=0.0587079 radius_classes=9
+  f1_energy=0.291189 f1_minmax=0.508902
+  d_energy=0.0296088 l_energy=0.11288 l_over_d=3.81239
+  params=[-0.25295  1.78902  0.90938 -0.10092 -0.06465 -1.69645]
+----------------------------------------------------------------------------------------
+rank=8 idx=11297 objective=0.0350213
+  vel_miss=0.0286203 vort_miss=0.0284077 collision_energy=0.00761044
+  radius_rel_var=0.0440908 radius_classes=9
+  f1_energy=0.101988 f1_minmax=0.593078
+  d_energy=0.00409389 l_energy=0.0400439 l_over_d=9.78138
+  params=[-1.08802  0.01651 -0.19514  0.49394 -0.31837  0.83729]
+----------------------------------------------------------------------------------------
+rank=9 idx=11124 objective=0.0350881
+  vel_miss=0.0254947 vort_miss=0.0269163 collision_energy=0.0544144
+  radius_rel_var=0.0544789 radius_classes=9
+  f1_energy=0.253592 f1_minmax=0.541016
+  d_energy=0.0259378 l_energy=0.0970168 l_over_d=3.74036
+  params=[-0.25635  1.80214  3.36741  0.09718 -0.44331  1.75129]
+----------------------------------------------------------------------------------------
+rank=10 idx=11115 objective=0.0353514
+  vel_miss=0.0264815 vort_miss=0.0271443 collision_energy=0.0389374
+  radius_rel_var=0.054714 radius_classes=9
+  f1_energy=0.217451 f1_minmax=0.502544
+  d_energy=0.0187857 l_energy=0.0820777 l_over_d=4.36916
+  params=[-0.10404 -1.08841  1.00123  0.09378 -0.57276  2.06491]

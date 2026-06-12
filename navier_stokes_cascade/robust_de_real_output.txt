@@ -1,0 +1,62 @@
+Robust first-handoff escape search
+complex=False runs=3 eta=0.8 min_second_ratio=0.1
+----------------------------------------------------------------------------------------------------
+run=1 seed=1300 fun=0.05829089616 success=False
+  robust_vort=0.04928841145 robust_vel=0.05121239903 rad=0.06001656472
+  comparable modes=16 paths=42 energy=0.036637856
+  all collision modes=25 paths=63 radius_classes=9
+  f1minmax=0.8 f1E=0.2486231251 dE=0.02678773448 lE=0.08602396961 l/d=3.211319332
+  x=[-2.494057  0.098113  1.113136  3.513228 -3.426284  1.096987]
+----------------------------------------------------------------------------------------------------
+run=2 seed=1301 fun=0.05872231353 success=False
+  robust_vort=0.04972379443 robust_vel=0.05173109819 rad=0.05999012736
+  comparable modes=16 paths=42 energy=0.03506021168
+  all collision modes=25 paths=63 radius_classes=9
+  f1minmax=0.8 f1E=0.2439333808 dE=0.02578667955 lE=0.08497684902 l/d=3.29537771
+  x=[ 2.838641 -0.955294 -0.199645  2.092374 -3.020943 -0.955306]
+----------------------------------------------------------------------------------------------------
+run=3 seed=1302 fun=1000 success=True
+  no metrics
+====================================================================================================
+BEST
+{
+  "seed": 1300,
+  "fun": 0.058290896163309944,
+  "success": false,
+  "message": "Maximum number of iterations has been exceeded.",
+  "metrics": {
+    "objective": 0.058290896163309944,
+    "robust_vel_miss": 0.05121239902524368,
+    "robust_vort_miss": 0.049288411454779885,
+    "comparable_collision_energy": 0.036637856004635316,
+    "comparable_collision_modes": 16,
+    "comparable_collision_paths": 42,
+    "all_collision_modes": 25,
+    "all_collision_paths": 63,
+    "radius_rel_var": 0.06001656472353374,
+    "radius_classes": 9,
+    "f1_energy": 0.24862312509597967,
+    "f1_minmax": 0.8000000000007749,
+    "d_energy": 0.026787734482047916,
+    "l_energy": 0.0860239696141043,
+    "l_over_d": 3.2113193324262252,
+    "d_ratio": 0.4333641120345953,
+    "params": [
+      -2.494056670331596,
+      0.0981131129222649,
+      1.1131360549450506,
+      3.513227558671365,
+      -3.426284027719923,
+      1.0969874123261567
+    ]
+  },
+  "x": [
+    -2.494056670331596,
+    0.0981131129222649,
+    1.1131360549450506,
+    3.513227558671365,
+    -3.426284027719923,
+    1.0969874123261567
+  ]
+}
+wrote robust_de_real_output.json

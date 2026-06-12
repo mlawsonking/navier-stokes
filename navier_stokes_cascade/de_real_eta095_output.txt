@@ -1,0 +1,54 @@
+Differential evolution first-handoff escape search
+complex=False runs=2 eta=0.95 min_f1=0.2 min_d_ratio=0.3 max_l_over_d=5.0
+weights: vort=1.0 vel=0.0 rad=0.15 l_over_d=0.0
+----------------------------------------------------------------------------------------------------
+run=1 seed=900 optimizer=de+nelder-mead fun=1000 success=True
+  no accepted metrics
+----------------------------------------------------------------------------------------------------
+run=2 seed=901 optimizer=de+nelder-mead fun=0.041918699 success=False
+  objective(metrics)=0.041918699 vel_miss=0.030769936 vort_miss=0.032436949
+  radius_rel_var=0.063211668 radius_classes=9 collision_modes=25 collision_paths=63
+  f1_energy=0.33293973 f1_minmax=0.95 d_energy=0.04921181 l_energy=0.111107 l_over_d=2.2577303
+  x=[ 7.75394   0.001915 -0.006794  7.744665  8.152277 -0.000865]
+====================================================================================================
+BEST
+{
+  "seed": 901,
+  "optimizer": "de+nelder-mead",
+  "fun": 0.04191869908787189,
+  "success": false,
+  "de_message": "Maximum number of iterations has been exceeded.",
+  "metrics": {
+    "idx": 0,
+    "objective": 0.04191869908787189,
+    "vel_miss": 0.030769936231172017,
+    "vort_miss": 0.03243694893444345,
+    "collision_energy": 0.11337257849373095,
+    "collision_modes": 25,
+    "collision_paths": 63,
+    "radius_rel_var": 0.0632116676895229,
+    "radius_classes": 9,
+    "f1_energy": 0.3329397317944147,
+    "f1_minmax": 0.950000000000005,
+    "d_energy": 0.04921181025995426,
+    "l_energy": 0.11110699662593204,
+    "l_over_d": 2.257730330159024,
+    "params": [
+      7.753939708845245,
+      0.0019146163467313644,
+      -0.006794418907015702,
+      7.7446646249655435,
+      8.152277000216655,
+      -0.0008650945837166985
+    ]
+  },
+  "x": [
+    7.753939708845245,
+    0.0019146163467313644,
+    -0.006794418907015702,
+    7.7446646249655435,
+    8.152277000216655,
+    -0.0008650945837166985
+  ]
+}
+wrote de_real_eta095_output.json

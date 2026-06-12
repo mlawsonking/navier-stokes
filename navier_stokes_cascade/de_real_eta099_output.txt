@@ -1,0 +1,25 @@
+Differential evolution first-handoff escape search
+complex=False runs=1 eta=0.99 min_f1=0.2 min_d_ratio=0.3 max_l_over_d=5.0
+weights: vort=1.0 vel=0.0 rad=0.15 l_over_d=0.0
+----------------------------------------------------------------------------------------------------
+run=1 seed=950 optimizer=de+nelder-mead fun=1000 success=True
+  no accepted metrics
+====================================================================================================
+BEST
+{
+  "seed": 950,
+  "optimizer": "de+nelder-mead",
+  "fun": 1000.0,
+  "success": true,
+  "de_message": "Optimization terminated successfully.",
+  "metrics": null,
+  "x": [
+    -0.8778694305204022,
+    2.218885195472624,
+    0.17798078801694794,
+    1.5728734545338567,
+    -0.10789906420108908,
+    -0.9578806690418299
+  ]
+}
+wrote de_real_eta099_output.json
