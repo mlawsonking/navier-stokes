@@ -25,7 +25,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from navier_stokes_cascade.mode_sets import perm_shell, add_modes
+from navier_stokes_cascade.mode_sets import perm_shell, add_modes, with_conjugates
 from navier_stokes_cascade.ns_symbol import Mode, Array, ns_bilinear, norm2, norm, squared_radius, Interaction
 from navier_stokes_cascade.helical import helical_basis, helical_coeffs, helicity_purity
 from navier_stokes_cascade.defects import interactions_between, radius_energy, radius_variance, group_by_output
@@ -216,7 +216,11 @@ def run(args) -> dict[str, Any]:
         active0.update(d)
     stages = [stage_report("initial_F1_D_L", active0, None, args.min_second_ratio)]
 
-    inters = second_stage_interactions(fam)
+    if args.real_field:
+        # Reality condition: include -k with conjugate amplitude and close over all pairs.
+        inters = all_pair_interactions(with_conjugates(active0), include_self_order=True)
+    else:
+        inters = second_stage_interactions(fam)
     active, meta = aggregate_outputs(
         inters,
         project_helical=args.project_helical,
@@ -257,12 +261,14 @@ def main():
     ap.add_argument("--rel-cut", type=float, default=1e-6)
     ap.add_argument("--max-modes", type=int, default=250)
     ap.add_argument("--normalize", action="store_true")
+    ap.add_argument("--real-field", action="store_true",
+                    help="include conjugate modes -k (reality condition); without it the closure only sums positive-octant modes")
     ap.add_argument("--min-second-ratio", type=float, default=0.1)
     ap.add_argument("--json", type=Path, default=None)
     args = ap.parse_args()
     res = run(args)
     print("Helical radius closure experiment")
-    print(f"sign={args.sign} project_helical={args.project_helical} depth={args.depth} rel_cut={args.rel_cut} max_modes={args.max_modes} normalize={args.normalize}")
+    print(f"real_field={args.real_field} sign={args.sign} project_helical={args.project_helical} depth={args.depth} rel_cut={args.rel_cut} max_modes={args.max_modes} normalize={args.normalize}")
     for st in res["stages"]:
         print("-" * 110)
         print(f"{st['name']}: modes={st['modes']} radii={st['radius_classes']} range=({st['radius_min']},{st['radius_max']}) rel_var={st['radius_rel_var']:.8g} purity={st['helicity_purity_energy_avg']:.8g} dir_eigs={st['direction_cov_eigs']}")

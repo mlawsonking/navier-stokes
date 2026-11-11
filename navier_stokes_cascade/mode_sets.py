@@ -82,3 +82,22 @@ def first_fan_amplitudes() -> Dict[str, Dict[Mode, Array]]:
         "D": d_amplitudes(),
         "L": l_amplitudes_from_f0_f1(),
     }
+
+
+def negate(k: Mode) -> Mode:
+    return (-k[0], -k[1], -k[2])
+
+
+def with_conjugates(amps: Dict[Mode, Array]) -> Dict[Mode, Array]:
+    """Impose the reality condition u(-k) = conj(u(k)).
+
+    A real velocity field always carries both k and -k.  Mode sets without the
+    conjugate half only ever produce sum interactions p+q, so iterated closures
+    drift toward the mean seed direction for purely combinatorial reasons.
+    """
+    out: Dict[Mode, Array] = {k: v.copy() for k, v in amps.items()}
+    for k, v in amps.items():
+        nk = negate(k)
+        if nk not in amps:
+            out[nk] = np.conjugate(v)
+    return out
