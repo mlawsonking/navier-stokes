@@ -110,4 +110,108 @@ Other observations (recorded, not targets):
 3. Rung 2a (CCF): please confirm the target exponents in arXiv:2509.14185 (table or equation number). I have not read it.
 
 ## Answers from the math session
-(empty)
+Written 2026-11-11 by the math session, against commit f06e93f. Derivations marked "checked" were
+verified symbolically in that session; statements marked "inference" were not.
+
+### Verdict on rung 1
+1b passes. 1a stable passes. 1a unstable fails the stated threshold, and your diagnosis is right. I
+agree with stopping at the gate.
+
+### Q1. Fix the unstable branch with origin Taylor rows, then it must pass
+
+Why residual minimisation cannot pin lam here (checked). Your ansatz is analytic at y = 0 for every
+parameter value. Write U = -y + u3 y^3 + u5 y^5 + u7 y^7 + ... and expand the residual
+R = -lam U + ((1+lam) y + U) U' at the origin:
+
+    r1 = 0
+    r3 = u3 (2 lam - 1)
+    r5 = u5 (4 lam - 1) + 3 u3^2
+    r7 = u7 (6 lam - 1) + 8 u3 u5
+
+So an analytic solution other than U = -y exists only at lam = 1/(2i): the first nonzero coefficient
+u_(2i+1) is allowed only when (2i lam - 1) = 0. The exponent is fixed by an order-one algebraic
+condition at the origin. Collocation away from the origin sees a wrong lam only through the error of
+approximating |U|^(1+1/lam) by the basis, which is the small number E_n you measured (about 1e-9).
+The residual as a function of lam is therefore a V with slope about E_n. E_n shrinks as n grows, so
+the V flattens and lam is determined to about (solver noise)/E_n, which gets worse with refinement.
+That is the behaviour in your table, and it is why n = 48 was best.
+
+The fix is your option (a), in this specific form:
+- Compute the Taylor coefficients of the ansatz at y = 0 by truncated power-series arithmetic in
+  torch (series in y^2, multiply and compose as polynomials). This is exact, cheap and
+  differentiable. Do not use nested autodiff.
+- Form r3, r5, r7 from those coefficients and add them as residual rows with weight of order one
+  (not scaled down to the size of the collocation residual).
+- For the lam = 1/4 branch keep the row u3 = 0. Then r5 = u5 (4 lam - 1), and u5 is not zero because
+  your far-field normalisation excludes U = -y. For the exact profile y = -U - U^5, u5 = 1.
+- Do not use (b). A tail penalty biases the profile and does not add the missing information.
+  (c) is a correct description of the trade-off but caps accuracy near 1e-6.
+
+Pass condition, unchanged: |lam - 1/4| < 1e-6, and the error must not grow when n doubles
+(48 -> 96 -> 192). I expect far better than 1e-6; if the error still grows with n, stop and report.
+
+One cheap diagnostic to record first: with lam fixed on a grid of about 21 values in [0.24, 0.26],
+solve for the coefficients only and log the minimum residual norm against lam at n = 48 and n = 96.
+The prediction is a V centred at 0.25 whose slope drops as n rises. If it is not a V, the diagnosis
+above is wrong and I need to see it.
+
+The gate: 1a unstable must pass before rung 3 and before any unstable target in rung 2. The stable
+targets of rung 2 (2a stable, 2b stable) do not depend on it and may start once Michael says go,
+but build the origin rows first: it is a few hours of work and rung 2 needs them anyway.
+
+### Q2. How smooth is the competing family in rungs 2 and 3
+
+The general mechanism (inference from the Burgers case, standard for transport-type profile
+equations). At a stagnation point of the self-similar flow the transport operator is of Euler type,
+(c + U'(0)) y d/dy plus a constant, so the linearised equation has homogeneous solutions |y|^mu with
+mu a continuous function of lam and of the origin gradient of the velocity profile. A smooth profile
+needs mu to be an integer of the right parity. The competing non-smooth family is C^floor(mu). The
+n-th admissible lam is where mu reaches the n-th allowed integer, so:
+- the stable profile sits at the lowest resonance and has the least smooth competitor, as with
+  Burgers lam = 1/2. It should be sharply determined by collocation alone;
+- each further unstable profile has a competitor about two orders smoother, so each is harder to
+  pin by the same factor you saw between lam = 1/2 and lam = 1/4.
+
+Supporting evidence, not proof: arXiv:2509.14185 reports that 1/lam is close to linear in the
+instability order n for IPM, and 1/(lam - 1) for Boussinesq (their fitted rules), which is the
+pattern mu(lam) crossing successive integers would give. Burgers has 1/lam = 2i exactly.
+
+I have not done the local analysis for CCF or Boussinesq, so I cannot give you the integers. What
+to do instead, for every profile you converge:
+1. Report the origin exponent. Linearise the profile equation at the stagnation point using your
+   computed U'(0) (for Boussinesq, the two velocity-gradient eigenvalues at the corner) and record
+   mu. This number tells us which resonance the profile sits on and how smooth the competitor is.
+2. Add origin Taylor rows through order ceil(mu) + 1, built the same way as for Burgers. Nonlocal
+   terms enter those rows only through the Taylor coefficients of the velocity, which the basis
+   gives in closed form.
+3. Prefer an analytic relation for lam from the origin when one exists, with lam eliminated as an
+   unknown. arXiv:2509.14185 says (Methods, "Incorporating mathematical structure") that
+   "smoothness requirements at the origin can also be used to derive an analytical relationship
+   for the self-similar parameter lambda" and treats this as more robust than training lam. A
+   summary of that paper gives the Boussinesq relation as lam = -3 - 2 dU1/dy1 at the origin; I
+   could not verify that formula against the text, so derive it yourself before using it.
+
+For rung 3 this matters more, not less: there is no reference value, so lam must come from an
+origin condition, with collocation used only to solve for the profile.
+
+### Q3. CCF targets in arXiv:2509.14185
+
+What I could confirm from the page text (Introduction):
+- first unstable CCF profile: lam_1 ≈ 0.6057 (originally Wang et al., recovered by Eggers and Fontelos);
+- second unstable CCF profile: lam_2 = 0.4703, found in that paper, residual of order 1e-7;
+- fitted rules: Boussinesq lam_n ~ 1/(1.4187 n + 1.0863) + 1, IPM lam_n ~ 1/(1.1459 n + 0.9723).
+
+What I could not confirm: the stable CCF exponent lam_0 (shown only in Figure 2f, which I could not
+read), the CCF equation and sign conventions, the profile equation, the normalisation, and all exact
+Boussinesq values. The paper's Supplementary Information was not posted with v1. No table numbers
+could be confirmed.
+
+So for 2a: read the equation, ansatz and lam_0 from the PDF of arXiv:2509.14185 and from
+arXiv:2201.06780, and write them at the top of the 2a section of this file with page references
+before running. The target is lam_0 to 4 digits and lam_1 = 0.6057 to 4 digits. Check your sign and
+scaling conventions against lam_1 first, since that is the one value I can vouch for.
+
+### Order of work
+1. lam-scan diagnostic (minutes).
+2. Origin Taylor rows; rerun 1a unstable; report against the pass condition.
+3. Wait for Michael's go on rung 2.
