@@ -1,0 +1,168 @@
+"""CCF (a = -1) profiles that are NOT smooth at the origin: the one-parameter family in lam.
+
+Burgers form (Theta' = Omega, Theta(0) = 0, U = H Theta):
+    -lam Theta + ((1+lam) y - U) Theta' = 0.
+Local analysis at y = 0 (derived here, unchecked elsewhere): Theta ~ A |y|^mu with
+    mu = lam / (1 + lam - U'(0)),
+and because H(|y|^g) has the non-analytic part ~ sgn(y)|y|^g, the corrections carry the exponents
+    mu + j (mu - 1) + 2k,   j, k >= 0.
+mu = 2 is the smooth case (the j >= 1 terms vanish). Representation, with s = r^(-alpha/2), r = 1 + y^2,
+1 - s ~ (alpha/2) y^2 at the origin and analytic at the far field:
+    Theta = r^beta (1-s)^(mu/2) [ N_0(s) + sum_{j=1..J} (1-s)^(j (mu-1)/2) N_j(s) ]
+N_0: mapped Chebyshev series (ccf_fast.MAP), n0 terms. N_j: plain Chebyshev, nj terms.
+Unknowns p = [lam, mu, c]. Rows: collocation of the Burgers form on y = exp(xi) (so |y|^g is analytic in xi
+and the trapezoid rule keeps spectral accuracy), amplitude  Theta ~ -(d/2)|y|^mu,  origin relation.
+`free` chooses the problem: (False, True) family at fixed lam; (True, False) smooth profile with lam unknown.
+"""
+import math
+import numpy as np
+import torch
+from .ccf import cheb3, DT
+from . import ccf_fast as F
+
+
+class EGrid:
+    def __init__(self, h=0.0125, L=40.0, Lc0=12.0, Lc=22.0, n_gl=128, device="cuda"):
+        J = int(round(L / h))
+        self.h = h
+        self.ys = torch.exp(h * torch.arange(-J, J + 1, dtype=DT, device=device))
+        self.w = h * self.ys
+        i = torch.arange(-int(round(Lc0 / h)), int(round(Lc / h)), dtype=DT, device=device)
+        self.y = torch.exp(h * (i + 0.5))
+        self.K = self.w[None, :] / (self.y[:, None] ** 2 - self.ys[None, :] ** 2)
+        self.Y = self.ys[-1]
+        g, gw = np.polynomial.legendre.leggauss(n_gl)
+        self.g = torch.tensor((g + 1) / 2, dtype=DT, device=device)
+        self.gw = torch.tensor(gw / 2, dtype=DT, device=device)
+
+
+def E2(s, oms, mu, shape):
+    """Basis for M(s) = Theta / r^beta and dM/ds. shape = (n0, nj, J). oms = 1 - s (passed in for accuracy)."""
+    n0, nj, J = shape
+    Es, E1s = [], []
+    for j in range(J + 1):
+        g = (mu + j * (mu - 1)) / 2
+        if j == 0:
+            P, P1, _ = F.basis3(s, n0)
+        else:
+            T, d1, _ = cheb3(2 * s - 1, nj); P, P1 = T, 2 * d1
+        f = oms ** g
+        Es.append(f[:, None] * P)
+        E1s.append(f[:, None] * P1 - (g * oms ** (g - 1))[:, None] * P)
+    return torch.cat(Es, 1), torch.cat(E1s, 1)
+
+
+def _fields(lam, mu, y, shape):
+    alpha = 1.0 / (1.0 + lam); beta = (1 - alpha) / 2
+    l = torch.log1p(y * y)
+    s = torch.exp(-alpha / 2 * l); oms = -torch.expm1(-alpha / 2 * l)
+    E, E1 = E2(s, oms, mu, shape)
+    Q = 2 * beta * E - alpha * s[:, None] * E1
+    rb = torch.exp(beta * l)
+    BTh = rb[:, None] * E
+    BOm = (y * rb / (1 + y * y))[:, None] * Q
+    return BTh, BOm, Q, oms, rb, alpha, beta
+
+
+def operators(lam, mu, G, shape):
+    BTh_s, BOm_s, _, _, _, alpha, beta = _fields(lam, mu, G.ys, shape)
+    BTh, BOm, _, oms, rb, _, _ = _fields(lam, mu, G.y, shape)
+    sY = (1 + G.Y * G.Y) ** (-alpha / 2)
+    sg = sY * G.g
+    Eg, E1g = E2(sg, 1 - sg, mu, shape)
+    tM = sY * (G.gw @ Eg) / alpha
+    tQ = sY * (G.gw @ (2 * beta * Eg - alpha * sg[:, None] * E1g)) / alpha
+    AU = (2 * G.y / math.pi)[:, None] * (G.K @ BTh_s - tM)
+    up0 = -(2 / math.pi) * (G.w @ (BOm_s / G.ys[:, None]) + tQ)
+    wt = oms ** (mu / 2) * rb
+    one = torch.ones(1, dtype=DT, device=G.y.device)
+    nvec = torch.zeros(BTh.shape[1], dtype=DT, device=G.y.device)
+    nvec[:shape[0]] = (alpha / 2) ** (mu / 2) * F.basis3(one, shape[0])[0][0]
+    return BTh, BOm, AU, up0, wt, nvec
+
+
+D = 0.1
+
+
+def residual(p, G, shape, with_jac=False):
+    lam, mu, c = p[0], p[1], p[2:]
+    BTh, BOm, AU, up0, wt, nvec = operators(lam, mu, G, shape)
+    Th, Om, U = BTh @ c, BOm @ c, AU @ c
+    V = (1 + lam) * G.y - U
+    R = (-lam * Th + V * Om) / wt
+    u0 = up0 @ c
+    r = torch.cat([R, (nvec @ c + D / 2).reshape(1), (-lam + (1 + lam - u0) * mu).reshape(1)])
+    if not with_jac:
+        return r
+    Jc = (-lam * BTh + V[:, None] * BOm - Om[:, None] * AU) / wt[:, None]
+    return r, torch.cat([Jc, nvec[None], (-mu * up0)[None]])
+
+
+def res_jac(p, G, shape, free):
+    r, Jc = residual(p, G, shape, with_jac=True)
+    cols = []
+    for k in (0, 1):
+        if free[k]:
+            e = torch.zeros_like(p); e[k] = 1e-6
+            cols.append(((residual(p + e, G, shape) - residual(p - e, G, shape)) / 2e-6)[:, None])
+    return r, torch.cat(cols + [Jc], 1)
+
+
+def lm(p0, G, shape, free=(False, True), max_iter=200, tol=1e-14, mu0=1e-3, verbose=False, stall=6):
+    p = p0.clone()
+    idx = torch.tensor([k for k in (0, 1) if free[k]] + list(range(2, p.numel())), device=p.device)
+    r, J = res_jac(p, G, shape, free)
+    cost = 0.5 * (r @ r); damp, hist = mu0, []
+    for it in range(max_iter):
+        d = J.norm(dim=0).clamp_min(1e-30); Js = J / d; m = Js.shape[1]; ok = False
+        eye = torch.eye(m, dtype=DT, device=p.device); z = torch.zeros(m, dtype=DT, device=p.device)
+        for _ in range(40):
+            Qm, Rm = torch.linalg.qr(torch.cat([Js, math.sqrt(damp) * eye]))
+            step = torch.linalg.solve_triangular(Rm, (Qm.T @ torch.cat([-r, z]))[:, None], upper=True)[:, 0] / d
+            pn = p.clone(); pn[idx] = pn[idx] + step
+            rn = residual(pn, G, shape); cn = 0.5 * (rn @ rn)
+            if torch.isfinite(cn) and cn < cost:
+                rel = ((cost - cn) / cost).item()
+                p, cost, damp, ok = pn, cn, max(damp / 5, 1e-16), True
+                break
+            damp *= 4
+        if not ok:
+            break
+        r, J = res_jac(p, G, shape, free)
+        hist.append((it, r.abs().max().item(), p[0].item(), p[1].item()))
+        if verbose and it % 10 == 0:
+            print(f"  it {it} sup {hist[-1][1]:.2e} lam {p[0].item():.12f} mu {p[1].item():.10f} damp {damp:.1e}", flush=True)
+        if hist[-1][1] < tol or (rel < 1e-13 and damp < 1e-12) or step.abs().max().item() < 1e-16:
+            break
+        if len(hist) > stall and hist[-1][1] > 0.5 * hist[-1 - stall][1] and hist[-1][1] < 1e-9:
+            break                                   # converged to the noise floor: sup no longer halving
+    return p, hist
+
+
+def from_smooth(p_old, old_map, new_map, shape, device):
+    """Smooth solution in the ccf_fast representation (Theta = r^beta M(s), M(1) = 0) -> this one (mu = 2)."""
+    n0 = shape[0]
+    j = torch.arange(n0, dtype=DT, device=device); t = torch.cos(math.pi * (j + 0.5) / n0)
+    if new_map is None:
+        s = (t + 1) / 2
+    else:
+        x0, eps = new_map; b1, b2 = math.asinh((1 - x0) / eps), math.asinh((1 + x0) / eps)
+        s = (x0 + eps * torch.sinh((b1 + b2) * (t + 1) / 2 - b2) + 1) / 2
+    F.MAP = old_map
+    M = F.basis3(s, p_old.numel() - 1)[0] @ p_old[1:].to(device)
+    M1 = F.basis3(torch.ones(1, dtype=DT, device=device), p_old.numel() - 1)[0][0] @ p_old[1:].to(device)
+    F.MAP = new_map
+    c0 = torch.linalg.solve(F.basis3(s, n0)[0], (M - M1) / (1 - s))
+    two = torch.tensor([2.0], dtype=DT, device=device)
+    return torch.cat([p_old[:1].to(device), two, c0, torch.zeros(shape[1] * shape[2], dtype=DT, device=device)]), M1.item()
+
+
+def remap0(p, old_map, new_map, shape, device):
+    """Carry the N_0 block to another sinh map by Chebyshev interpolation."""
+    n0 = shape[0]
+    j = torch.arange(n0, dtype=DT, device=device); t = torch.cos(math.pi * (j + 0.5) / n0)
+    x0, eps = new_map; b1, b2 = math.asinh((1 - x0) / eps), math.asinh((1 + x0) / eps)
+    s = (x0 + eps * torch.sinh((b1 + b2) * (t + 1) / 2 - b2) + 1) / 2
+    F.MAP = old_map; N = F.basis3(s, n0)[0] @ p[2:2 + n0]
+    F.MAP = new_map; q = p.clone(); q[2:2 + n0] = torch.linalg.solve(F.basis3(s, n0)[0], N)
+    return q

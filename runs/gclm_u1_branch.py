@@ -31,11 +31,11 @@ def remap(p, old, new, n):
 out = open("runs/gclm_u1_branch.jsonl", "a"); sols = []; prevmap = None; a = a0; sgn = 1.0 if a1 > a0 else -1.0; t0 = time.time(); prev = None
 while (a - a1) * sgn <= 1e-12:
     pk, ypk, x0, fw = measure(p, cur)
-    new = (x0, max(0.33 * fw, 0.004)); p = remap(p, cur, new, n); cur = new
+    new = (x0, max(float(os.environ.get("EPSF", 0.33)) * fw, 0.004)); p = remap(p, cur, new, n); cur = new
     guess = p.clone()
     if prev is not None:                       # secant predictor in a (previous solution carried to the same map)
         guess = p + (p - remap(prev, prevmap, cur, n))
-    q, hist = F.lm(guess, G, a=a, lam_free=True, max_iter=(300 if prev is None else 100))
+    q, hist = F.lm(guess, G, a=a, lam_free=True, max_iter=(400 if len(sols) < 2 else 100))
     r = F.residual(q[0], q[1:], G, a); sup = r.abs().max().item()
     pk, ypk, _, fw = measure(q, cur); cc = q[1:].abs()
     print(f"a {a:+.4f} lam {q[0].item():.12f} sup {sup:.1e} its {len(hist)} peak {pk:.4f}@{ypk:.3f} fwhm_x {fw:.4f} c_mid {cc[n//2-2:n//2+1].max().item():.0e} c_last {cc[-3:].max().item():.0e} t={time.time()-t0:.0f}s", flush=True)
