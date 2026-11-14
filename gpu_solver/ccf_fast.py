@@ -150,3 +150,10 @@ def lm(p0, G, a=-1.0, lam_free=True, max_iter=200, tol=1e-15, mu0=1e-3, verbose=
         if stall and len(hist) > stall and hist[-1][1] > 0.5 * hist[-1 - stall][1] and hist[-1][1] < 1e-8:
             break                                   # at the noise floor: sup no longer halving
     return p, hist
+
+
+def gn(p0, G, a=-1.0, lam_free=True, **kw):
+    """Truncated-SVD Gauss-Newton (see ccf_sing.tsvd_gn) for p = [lam, c]."""
+    from .ccf_sing import tsvd_gn
+    idx = torch.arange(0 if lam_free else 1, p0.numel(), device=p0.device)
+    return tsvd_gn(lambda p: res_jac(p, G, a, lam_free), lambda p: residual(p[0], p[1:], G, a), p0, idx, **kw)

@@ -41,8 +41,11 @@ while (a - a1) * sgn <= 1e-12:
     guess = p.clone()
     if CL: G = C.Grid(h=h, L=40.0, Lc=22.0, device=DEV, n_gl=128, cluster=(math.asinh(ypk), 0.5, CL * 0.5))
     if prev is not None:                       # secant predictor in a (previous solution carried to the same map)
-        guess = p + (a - ap) / (ap - aprev) * (p - remap(prev, prevmap, cur, n))
-    q, hist = F.lm(guess, G, a=a, lam_free=True, max_iter=(400 if prev is None else int(os.environ.get('MAXIT', 100))), mu0=float(os.environ.get('MU0', 1e-6)), stall=5)
+        # M ~ const/beta as lam -> 0 (beta = lam/(2(1+lam))), so extrapolate beta*c, not c
+        pr = remap(prev, prevmap, cur, n); fz = (a - ap) / (ap - aprev); be = lambda l: l / (2 * (1 + l))
+        lg = p[0] + fz * (p[0] - pr[0]); wg = be(p[0]) * p[1:] + fz * (be(p[0]) * p[1:] - be(pr[0]) * pr[1:])
+        guess = torch.cat([lg.reshape(1), wg / be(lg)])
+    q, hist = F.gn(guess, G, a=a, lam_free=True, max_iter=30, rc=float(os.environ.get('RC', 1e-9)), verbose=bool(os.environ.get('VERBOSE')))
     r = F.residual(q[0], q[1:], G, a); sup = r.abs().max().item()
     G2 = C.Grid(h=h * 0.8, L=40.0, Lc=22.0, device=DEV, n_gl=128, cluster=(math.asinh(ypk) + 0.011, 0.4, 0.38))
     off = F.residual(q[0], q[1:], G2, a).abs().max().item(); del G2      # residual on a grid the fit never saw

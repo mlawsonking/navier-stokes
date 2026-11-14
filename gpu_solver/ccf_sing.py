@@ -65,9 +65,22 @@ def E2(s, oms, mu, shape):
             P, P1, _ = F.basis3(s, n0)
         else:
             T, d1, _ = cheb3(2 * s - 1, nj); P, P1 = T, 2 * d1
-        f = oms ** g
+        if j > 0 and j % 2 == 0:
+            # even j: at mu = 2 the plain block (1-s)^g is an integer power, i.e. already in the span of N_0.
+            # Use the divided difference [(1-s)^g - (1-s)^g0]/(mu-2), g0 = (2+j)/2, which tends to
+            # ((j+1)/2) (1-s)^g0 log(1-s): independent of N_0 for every mu, so the Jacobian stays regular.
+            g0 = (2 + j) / 2; m2 = mu - 2; lx = torch.log(oms)
+            if abs(float(m2)) < 1e-9:
+                dd = (j + 1) / 2 * lx
+            else:
+                dd = torch.expm1((j + 1) / 2 * m2 * lx) / m2
+            f = oms ** g0 * dd
+            fx = oms ** (g0 - 1) * (g * dd + (j + 1) / 2)          # d f / d(1-s)
+        else:
+            f = oms ** g
+            fx = g * oms ** (g - 1)
         Es.append(f[:, None] * P)
-        E1s.append(f[:, None] * P1 - (g * oms ** (g - 1))[:, None] * P)
+        E1s.append(f[:, None] * P1 - fx[:, None] * P)
     return torch.cat(Es, 1), torch.cat(E1s, 1)
 
 
@@ -185,3 +198,44 @@ def remap0(p, old_map, new_map, shape, device):
     F.MAP = old_map; N = F.basis3(s, n0)[0] @ p[2:2 + n0]
     F.MAP = new_map; q = p.clone(); q[2:2 + n0] = torch.linalg.solve(F.basis3(s, n0)[0], N)
     return q
+
+
+def tsvd_gn(resjac, resid, p0, idx, max_iter=25, rc=1e-9, tol=1e-14, verbose=False, svd=True):
+    """Gauss-Newton with a truncated-SVD pseudo-inverse of the column-scaled Jacobian and step halving.
+    The singular blocks make the Jacobian numerically rank-deficient (about 30 singular values below 1e-12
+    near mu = 2); damping (LM) then crawls, while discarding those directions converges quadratically.
+    resjac(p) -> (r, J over the unknowns idx), resid(p) -> r. Returns p, history [(it, sup, l2, t, rank)]."""
+    p = p0.clone(); hist = []
+    r, J = resjac(p)
+    for it in range(max_iter):
+        d = J.norm(dim=0).clamp_min(1e-300)
+        if svd:
+            # SVD on the CPU (LAPACK gesdd): the CUDA SVD is slow here and once hung. QR-Tikhonov with the
+            # same cutoff does NOT converge (tested), so the truncation has to be a real SVD.
+            U, sv, Vh = torch.linalg.svd((J / d).cpu(), full_matrices=False); keep = sv > rc * sv[0]
+            st = (Vh[keep].T @ ((U[:, keep].T @ -r.cpu()) / sv[keep])).to(J.device) / d; rank = int(keep.sum())
+        else:                                   # same filter as a QR-Tikhonov solve (GPU SVD is very slow here)
+            m = J.shape[1]; eye = torch.eye(m, dtype=DT, device=J.device)
+            Qm, Rm = torch.linalg.qr(torch.cat([J / d, (rc * 5.0) * eye]))
+            st = torch.linalg.solve_triangular(Rm, (Qm[:J.shape[0]].T @ -r)[:, None], upper=True)[:, 0] / d; rank = m
+        t, ok = 1.0, False
+        while t > 1e-3:
+            pn = p.clone(); pn[idx] = pn[idx] + t * st; rn = resid(pn)
+            if torch.isfinite(rn).all() and rn.norm() < r.norm():
+                ok = True; break
+            t /= 2
+        if not ok:
+            break
+        gain = 1 - (rn.norm() / r.norm()).item()
+        p = pn; r, J = resjac(p)
+        hist.append((it, r.abs().max().item(), r.norm().item(), t, rank))
+        if verbose:
+            print(f"  gn {it} sup {hist[-1][1]:.2e} t {t:.3f} rank {hist[-1][4]}", flush=True)
+        if hist[-1][1] < tol or gain < 0.3 and hist[-1][1] < 1e-7:
+            break
+    return p, hist
+
+
+def gn(p0, G, shape, free=(False, True), **kw):
+    idx = torch.tensor([k for k in (0, 1) if free[k]] + list(range(2, p0.numel())), device=p0.device)
+    return tsvd_gn(lambda p: res_jac(p, G, shape, free), lambda p: residual(p, G, shape), p0, idx, **kw)
