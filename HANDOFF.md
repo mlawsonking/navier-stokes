@@ -444,3 +444,47 @@ the residual grows; treat those as provisional. The only external check is a = -
 published high-precision lam(a) to compare with (Lushnikov-Silantyev-Siegel's fit at a = -1 is 1.2% off per
 the subagent's notes); this table is unverified outside its own refinement.
 
+
+
+## Builder update 2026-11-13 (fourth) — first unstable CCF profile found (6 digits)
+
+What unblocked it: I opened Fig. 3 of arXiv:2201.06780 (ar5iv, `CCF_compare.png`) in the browser and read it
+myself. The unstable profile there has U'(0) about 1.30 (so mu = 2: lam = 2U'(0) - 2 holds, as for the stable
+profile; my mu = 4 hypothesis is wrong), Omega'(0) about -0.1 in their normalisation, and a sharp peak
+|Omega| about 1.6 near y = 4. In my normalisation Omega'(0) = -2 that peak sits at y about 0.2, which the
+basis could not resolve and no start resembled. The figure was used only to shape the initial guess and to
+choose the normalisation Omega'(0) = -0.1; lam was then solved as an unknown.
+
+Set-up (`runs/ccf_unstable1.py`, `runs/ccf_u_refine.py`, solver `gpu_solver/ccf_fast.py`): same equations and
+rows as the stable case, normalisation Omega'(0) = -0.1, initial guess
+Omega = -(0.1 y + k y^3)/(1 + (y/4)^8)^((3+alpha)/8) fitted to the basis, lam fixed for 400 iterations and then free.
+
+| n | quad step h (rows) | lam | sup residual | U'(0) | peak \|Omega\| at y | note |
+|---|---|---|---|---|---|---|
+| 48 | 0.05 (440) | 0.6598858 | 2.0e-2 | 1.33999 | 1.254 at 2.72 | |
+| 64 | 0.05 | 0.6337437 | 9.3e-3 | 1.32152 | 1.388 at 2.58 | |
+| 128 | 0.05 | 0.6109922 | 7.2e-13 | 1.30550 | 1.546 at 2.44 | **aliased: not a solution** (too few rows for n) |
+| 128 | 0.025 (880) | 0.6076754 | 7.8e-4 | 1.30413 | 1.572 at 3.49 | |
+| 128 | 0.0125 (1760) | 0.6085334 | 1.1e-3 | 1.30479 | 1.567 at 3.56 | |
+| 192 | 0.0125 | 0.60573472576 | 6.5e-6 | 1.3028675527 | 1.58984 at 3.746 | GPU |
+| 288 | 0.0125 | 0.60573467431 | 3.0e-9 | 1.3028673372 | 1.58985 at 3.746 | GPU; stopped at the 300-iteration cap |
+
+Published lam_1 = 0.6057337012032 (2509.14185 Fig. 2f), 0.60573 (2201.06780). Mine: 0.605735 at n = 192 and 288.
+- Rung 2a pass condition (4 digits): met (5 digits agree; difference 1.0e-6).
+- **Not yet an independent high-precision value.** The 1.0e-6 difference from the published 13-digit value is
+  most likely my error: at n = 288 the coefficients for k > 150 sit near 1e-7 without decaying and LM had
+  not converged. Second seed and a doubling of the points at fixed n have not been done for this profile.
+- The row at n = 128, h = 0.05 is kept as a warning: residual 7e-13 at a lam that is wrong in the 3rd digit.
+  Rows must outnumber unknowns by a wide margin in the interior of s; I now use at least 6 rows per unknown.
+- The profile needs a far larger basis than the stable one (coefficients fall about one decade per 25-30
+  modes), so the discretisation, not the method, limits accuracy. Cost is about 1.5 s per iteration at n = 288
+  on the GPU, where the GPU now helps.
+
+Attempt A in the previous update failed because of normalisation and starting shape, not structure. Attempts
+C and D (mu = 4) are wrong hypotheses.
+
+### Next
+1. A discretisation that resolves the peak (peak-adapted map or two-domain basis), to take lam_1 past 10
+   digits and compare with 0.6057337012032.
+2. Second unstable profile: the two published values differ at the 7th digit (0.4713248638620 vs 0.47132422).
+3. Search for a third.

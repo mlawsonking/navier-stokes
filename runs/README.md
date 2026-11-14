@@ -29,3 +29,5 @@ Reproduce:
 - `ccf_fixed.py`, `ccf_multistart.py`, `ccf_k2.py`, `ccf_k2_scan.py`, `ccf_nu_continuation.py`, `ccf_nu_multistart.py`,
   `ccf_picard.py` — the unstable-profile attempts A-F in HANDOFF (all negative). `ccf_fast_check.py` — fast vs old solver.
 - `gclm_branch.py`, `gclm_branch.jsonl`, `gclm_*.out` — stable branch of the gCLM family continued in a.
+- `ccf_unstable1.py`, `ccf_u_refine.py`, `ccf_u1_*.pt` — first unstable CCF profile (lam_1 = 0.605735 at n = 192, 288).
+  `ccf_scale_test.py` — a representation test that turned out unreliable (ill-conditioned fit); ignore.

@@ -51,7 +51,7 @@ def residual(lam, c, G, a=-1.0, with_jac=False):
     V = (1 + lam) * G.y + a * U
     R = (Om + V * Omy - Om * Up) / wt
     if MODE['norm'] == 'origin':
-        nvec, nval = q1, 2.0
+        nvec, nval = q1, MODE.get('d', 2.0)
     else:                                             # tail amplitude: M(0) = -1
         nvec = torch.tensor([(-1.0) ** j for j in range(n)], dtype=DT, device=c.device); nval = 1.0
     rows = [R, (nvec @ c + nval).reshape(1)]
