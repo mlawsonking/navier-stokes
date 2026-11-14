@@ -524,3 +524,30 @@ Current state (n = 192, h = 0.0125, map (-0.097, 0.03)): with lam fixed at 0.471
 150-iteration cap, coefficients flat near 3e-5, peak 5.7: under-resolved). This is NOT a result. It is noted
 only because the free solve moved away from 0.4713248638620 (2509.14185) toward 0.47132422 (2511.22819).
 A run with a sharper map and four times the rows is in progress.
+
+
+## Builder update 2026-11-14 (second) — lam_2: two more failed routes; unstable branch in a started
+
+### lam_2 attempts (all negative so far)
+1. The candidate reported above (lam about 0.471324, residual 2e-5) was another under-sampling artifact: on
+   four times the rows its residual was 2.6e2, and 400 LM iterations (n = 256, h = 0.00625, map
+   (-0.096, 0.015)) only reached 6e-4 with lam = 0.471339 and a different shape. Withdrawn, including the
+   remark that the free solve "moved toward 0.47132422".
+2. Family tracking in lam (`runs/ccf_family_track.py`): fixed lam, no origin relation, collocation rows with
+   y < 0.5 dropped, map following the peak. It converges at every lam (residual 1e-12 to 1e-8) and
+   g(lam) = lam + 2 - 2U'(0) returns to zero near lam = 0.524 with peak 2.5, whereas the published second
+   profile is at 0.4713 with peak about 8.5 and the published family (Fig. 3 of 2511.22819) has peak 3.7 at
+   lam = 0.51 against my 2.58. So dropping the origin rows changes the object: my tracked family is not the
+   true family and its zero of g means nothing. Discarded. (`runs/ccf_family_track_t1.pt`, `_t2.out`.)
+   Why, in hindsight (derived here, unchecked): the true family has Theta ~ |y|^mu E(y) with
+   E = 1 + e1 |y|^(mu-1) + e2 y^2 + ..., e1 proportional to the non-analytic part of H(|y|^mu), which
+   vanishes only at mu = 2. So away from an admissible lam the profile has a relative correction of order
+   |y|^(mu-1), first order in y, which an analytic basis cannot follow even approximately.
+3. What a correct family solver needs: Theta = r^beta (1-s)^(mu/2) sum_j (1-s)^(j (mu-1)/2) N_j(s), with mu
+   unknown and the relation mu = lam/(1 + lam - U'(0)) as a row. Not built.
+
+### First unstable branch in the gCLM parameter a
+Started (`runs/gclm_u1_branch.py`): smooth profiles, lam free, origin row, map following the peak.
+First look (n = 128, h = 0.025): a = -0.96 gives lam_1 = 0.56416 (residual 1e-8), a = -0.92 gives 0.5229
+(residual 3e-6). The branch moves smoothly with a; a higher-resolution run is in progress. I know of no
+published values for this branch away from a = -1 (not checked in the literature).

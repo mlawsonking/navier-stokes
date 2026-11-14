@@ -71,6 +71,8 @@ def residual(lam, c, G, a=-1.0, with_jac=False):
     Om, Omy, U, Up = BOm @ c, BOmy @ c, AU @ c, AUp @ c
     V = (1 + lam) * G.y + a * U
     R = (Om + V * Omy - Om * Up) / wt
+    keep = G.y >= MODE.get('ymin', 0.0)              # optional: drop collocation rows near the origin
+    R = R[keep]
     if MODE['norm'] == 'origin':
         nvec, nval = q1, MODE.get('d', 2.0)
     else:                                             # tail amplitude: M(0) = -1
@@ -81,7 +83,7 @@ def residual(lam, c, G, a=-1.0, with_jac=False):
     r = torch.cat(rows)
     if not with_jac:
         return r
-    Jc = (BOm + V[:, None] * BOmy + a * Omy[:, None] * AU - Up[:, None] * BOm - Om[:, None] * AUp) / wt[:, None]
+    Jc = ((BOm + V[:, None] * BOmy + a * Omy[:, None] * AU - Up[:, None] * BOm - Om[:, None] * AUp) / wt[:, None])[keep]
     Jc = torch.cat([Jc, nvec[None]] + ([-(1 - a) * up0[None]] if MODE['origin_row'] else []))
     return r, Jc
 
