@@ -41,15 +41,27 @@ def cheb3(x, n):
 
 
 class Grid:
-    def __init__(self, h=0.1, L=40.0, Lc=22.0, n_gl=64, device="cuda"):
+    def __init__(self, h=0.1, L=40.0, Lc=22.0, n_gl=64, device="cuda", cluster=None):
+        """cluster = (xi_p, w, A): xi(tau) = tau - A [atan((tau-xi_p)/w) + atan((tau+xi_p)/w)] (odd, analytic),
+        denser by about 1/(1 - A/w) around xi = +-xi_p so the rows keep up with a peak-concentrated basis."""
         J = int(round(L / h))
         self.h = h
-        xi = h * torch.arange(J + 1, dtype=DT, device=device)
-        self.ys = torch.sinh(xi)                        # sources
-        w = h * torch.cosh(xi); w[0] *= 0.5; w[-1] *= 0.5
+        if cluster is None:
+            xi = lambda t: t; dxi = lambda t: torch.ones_like(t)
+        else:
+            xp, cw, A = cluster
+            tp = xp
+            for _ in range(200):                        # tau_p with xi(tau_p) = xp (the symmetrising term shifts it)
+                tp = xp + A * math.atan(2 * tp / cw)
+            xp = tp
+            xi = lambda t: t - A * (torch.atan((t - xp) / cw) + torch.atan((t + xp) / cw))
+            dxi = lambda t: 1 - (A / cw) * (1 / (1 + ((t - xp) / cw) ** 2) + 1 / (1 + ((t + xp) / cw) ** 2))
+        tau = h * torch.arange(J + 1, dtype=DT, device=device)
+        self.ys = torch.sinh(xi(tau))                   # sources
+        w = h * dxi(tau) * torch.cosh(xi(tau)); w[0] *= 0.5; w[-1] *= 0.5
         self.w = w
         nc = int(round(Lc / h))
-        self.y = torch.sinh(h * (torch.arange(nc, dtype=DT, device=device) + 0.5))   # collocation
+        self.y = torch.sinh(xi(h * (torch.arange(nc, dtype=DT, device=device) + 0.5)))   # collocation
         den = self.y[:, None] ** 2 - self.ys[None, :] ** 2
         self.K = self.w[None, :] / den                  # [nc, J+1]
         self.Y = self.ys[-1]

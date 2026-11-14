@@ -15,8 +15,26 @@ MAP = None   # None: plain Chebyshev in x = 2s-1.  (x0, eps): Tee-Trefethen sinh
              # basis T_k(t(2s-1)) is still analytic in s at both ends (origin and far field unchanged).
 
 
-def basis3(s, n):
-    """phi_k(s), d phi_k/ds, d^2 phi_k/ds^2 for k < n."""
+FAR = None   # None, or (nf, Jf): append far-field blocks s^(2 j (1+lam)) P_j(s), j = 1..Jf, P_j plain Chebyshev
+             # with nf terms. They carry the y^(-2j) corrections (from r = 1 + y^2 and from the moments of the
+             # Hilbert transform), which are powers s^(2j(1+lam)) and so NOT analytic in s at the far field.
+
+
+def basis3(s, n, lam=None):
+    """phi_k(s), d phi_k/ds, d^2 phi_k/ds^2 for k < n (the last nf*Jf of them far-field blocks if FAR)."""
+    if FAR is None or lam is None:
+        return _mapped3(s, n)
+    nf, Jf = FAR
+    out = [_mapped3(s, n - nf * Jf)]
+    T, d1, d2 = cheb3(2 * s - 1, nf); P, P1, P2 = T, 2 * d1, 4 * d2
+    for j in range(1, Jf + 1):
+        g = 2 * j * (1 + lam)
+        f0, f1, f2 = (s ** g)[:, None], (g * s ** (g - 1))[:, None], (g * (g - 1) * s ** (g - 2))[:, None]
+        out.append((f0 * P, f0 * P1 + f1 * P, f0 * P2 + 2 * f1 * P1 + f2 * P))
+    return tuple(torch.cat([o[i] for o in out], 1) for i in range(3))
+
+
+def _mapped3(s, n):
     x = 2 * s - 1
     if MAP is None:
         T, d1, d2 = cheb3(x, n)
@@ -36,7 +54,7 @@ def _basis(lam, y, n):
     alpha = 1.0 / (1.0 + lam); beta = (1 - alpha) / 2
     r = 1 + y * y
     s = r ** (-alpha / 2)
-    T, M1, M2 = basis3(s, n)
+    T, M1, M2 = basis3(s, n, lam)
     Q = 2 * beta * T - alpha * s[:, None] * M1
     Q1 = (2 * beta - alpha) * M1 - alpha * s[:, None] * M2
     BTh = (r ** beta)[:, None] * T
@@ -50,7 +68,7 @@ def operators(lam, G, n):
     _, BOm, BOmy, _, _, _ = _basis(lam, G.y, n)
     sY = (1 + G.Y * G.Y) ** (-alpha / 2)
     sg = sY * G.g
-    Tg, M1g, _ = basis3(sg, n)
+    Tg, M1g, _ = basis3(sg, n, lam)
     tM = sY * (G.gw @ Tg) / alpha
     tQ = sY * (G.gw @ (2 * beta * Tg - alpha * sg[:, None] * M1g)) / alpha
     AU = (2 * G.y / math.pi)[:, None] * (G.K @ BTh_s - tM)
@@ -76,7 +94,7 @@ def residual(lam, c, G, a=-1.0, with_jac=False):
     if MODE['norm'] == 'origin':
         nvec, nval = q1, MODE.get('d', 2.0)
     else:                                             # tail amplitude: M(0) = -1
-        nvec = basis3(torch.zeros(1, dtype=DT, device=c.device), n)[0][0]; nval = 1.0
+        nvec = basis3(torch.zeros(1, dtype=DT, device=c.device), n, lam)[0][0]; nval = 1.0
     rows = [R, (nvec @ c + nval).reshape(1)]
     if MODE['origin_row']:
         rows.append((lam + 2 - (1 - a) * (up0 @ c)).reshape(1))
@@ -98,7 +116,7 @@ def res_jac(p, G, a=-1.0, lam_free=True):
     return r, torch.cat([dl[:, None], Jc], 1)
 
 
-def lm(p0, G, a=-1.0, lam_free=True, max_iter=200, tol=1e-15, mu0=1e-3, verbose=False):
+def lm(p0, G, a=-1.0, lam_free=True, max_iter=200, tol=1e-15, mu0=1e-3, verbose=False, stall=0):
     """LM on p = [lam, c] (lam_free) or on c with p[0] fixed. Returns p, history [(it, sup, l2, lam)]."""
     p = p0.clone()
     r, J = res_jac(p, G, a, lam_free)
@@ -129,4 +147,6 @@ def lm(p0, G, a=-1.0, lam_free=True, max_iter=200, tol=1e-15, mu0=1e-3, verbose=
             print(f"  it {it} sup {hist[-1][1]:.2e} lam {p[0].item():.12f} mu {mu:.1e}", flush=True)
         if hist[-1][1] < tol or (rel < 1e-13 and mu < 1e-12) or step.abs().max().item() < 1e-16:
             break
+        if stall and len(hist) > stall and hist[-1][1] > 0.5 * hist[-1 - stall][1] and hist[-1][1] < 1e-6:
+            break                                   # at the noise floor: sup no longer halving
     return p, hist

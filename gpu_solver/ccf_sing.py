@@ -22,13 +22,23 @@ from . import ccf_fast as F
 
 
 class EGrid:
-    def __init__(self, h=0.0125, L=40.0, Lc0=12.0, Lc=22.0, n_gl=128, device="cuda"):
+    """Sources y' = exp(xi(tau_j)), tau_j = j h; collocation at the half-steps. cluster = (xi_p, w, A) uses
+    xi(tau) = tau - A atan((tau - tau_p)/w): analytic, and denser by 1/(1 - A/w) around xi_p (the peak), so the
+    rows keep up with a basis that is concentrated there. cluster = None is the plain exponential grid."""
+    def __init__(self, h=0.0125, L=40.0, Lc0=12.0, Lc=22.0, n_gl=128, device="cuda", cluster=None):
         J = int(round(L / h))
         self.h = h
-        self.ys = torch.exp(h * torch.arange(-J, J + 1, dtype=DT, device=device))
-        self.w = h * self.ys
+        if cluster is None:
+            xi = lambda t: t; dxi = lambda t: torch.ones_like(t)
+        else:
+            xp, w, A = cluster
+            xi = lambda t: t - A * torch.atan((t - xp) / w)
+            dxi = lambda t: 1 - (A / w) / (1 + ((t - xp) / w) ** 2)
+        tau = h * torch.arange(-J, J + 1, dtype=DT, device=device)
+        self.ys = torch.exp(xi(tau))
+        self.w = h * dxi(tau) * self.ys
         i = torch.arange(-int(round(Lc0 / h)), int(round(Lc / h)), dtype=DT, device=device)
-        self.y = torch.exp(h * (i + 0.5))
+        self.y = torch.exp(xi(h * (i + 0.5)))
         self.K = self.w[None, :] / (self.y[:, None] ** 2 - self.ys[None, :] ** 2)
         self.Y = self.ys[-1]
         g, gw = np.polynomial.legendre.leggauss(n_gl)
@@ -108,7 +118,7 @@ def res_jac(p, G, shape, free):
     return r, torch.cat(cols + [Jc], 1)
 
 
-def lm(p0, G, shape, free=(False, True), max_iter=200, tol=1e-14, mu0=1e-3, verbose=False, stall=6):
+def lm(p0, G, shape, free=(False, True), max_iter=200, tol=1e-14, mu0=1e-6, verbose=False, stall=5):
     p = p0.clone()
     idx = torch.tensor([k for k in (0, 1) if free[k]] + list(range(2, p.numel())), device=p.device)
     r, J = res_jac(p, G, shape, free)
@@ -134,7 +144,7 @@ def lm(p0, G, shape, free=(False, True), max_iter=200, tol=1e-14, mu0=1e-3, verb
             print(f"  it {it} sup {hist[-1][1]:.2e} lam {p[0].item():.12f} mu {p[1].item():.10f} damp {damp:.1e}", flush=True)
         if hist[-1][1] < tol or (rel < 1e-13 and damp < 1e-12) or step.abs().max().item() < 1e-16:
             break
-        if len(hist) > stall and hist[-1][1] > 0.5 * hist[-1 - stall][1] and hist[-1][1] < 1e-9:
+        if len(hist) > stall and hist[-1][1] > 0.5 * hist[-1 - stall][1] and hist[-1][1] < 1e-6:
             break                                   # converged to the noise floor: sup no longer halving
     return p, hist
 
