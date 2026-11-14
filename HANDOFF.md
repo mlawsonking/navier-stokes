@@ -289,3 +289,84 @@ lam_1 = 0.6057 before trusting any of it. The agent also offered its own origin 
 - Rung 2: not started. Waiting for Michael's go.
 - Question: for CCF, is the stable profile smooth at the origin with a C^k competitor as in your Q2 picture,
   and is lam = -2 + 2U'(0) (convention omega_t - u omega_x = u_x omega, Omega'(0) = -2) right?
+
+
+## Builder update 2026-11-13 (later) — rung 2a: stable CCF PASS to 13 digits; unstable NOT reproduced
+
+Michael said go on rung 2 ("Go with your instincts. Make serious contributions.") after I proposed aiming
+2a at the unstable profiles. Everything below was run on this machine unless marked "subagent".
+
+### Equation, ansatz, conventions (derived here; consistent with the subagent's reading of arXiv:2201.06780)
+    omega_t + a u omega_x = u_x omega,  u_x = H omega,  H f(y) = (1/pi) p.v. int f(y')/(y-y') dy',  a = -1 (CCF)
+    omega = (T-t)^-1 Omega(y),  y = x/(T-t)^(1+lam)
+    Omega + ((1+lam) y + a U) Omega' - Omega U' = 0,  U' = H Omega,  U(0) = 0,  Omega odd,  Omega'(0) = -2.
+Convention check: a = 0, lam = 0 is the exact CLM profile of rung 1b.
+First Taylor order at y = 0 gives lam = (1 - a) U'(0) - 2, so lam = 2 U'(0) - 2 for CCF (the subagent's
+relation is right). For a = -1 the equation integrates once to the Burgers form
+    -lam Theta + ((1+lam) y - H Theta) Theta' = 0,   Theta' = Omega, Theta even, Theta(0) = 0.
+
+### Method (`gpu_solver/ccf.py`)
+- Unknowns: lam and c_k in Theta = r^beta M(s), r = 1+y^2, alpha = 1/(1+lam), beta = (1-alpha)/2,
+  s = r^(-alpha/2), M = sum c_k T_k(2s-1). Even, analytic at 0, tail Omega ~ y^(-alpha) with corrections in
+  powers of s (an assumption; spectral decay of c_k for the stable profile supports it there).
+- U = H Theta and U' = H Omega by trapezoid quadrature on y' = sinh(j h), evaluated at the midpoints
+  (a pole midway between nodes gives the principal value with exponentially small error), parity used
+  explicitly, tail beyond sinh(L) added in closed form. Check against the exact CLM pair: errors <= 5e-13
+  (`runs/ccf_operator_check.py`).
+- Rows: collocation at the midpoints up to xi = Lc, Omega'(0) = -2, and lam + 2 - 2 U'(0) = 0. Batched LM.
+
+### Stable profile — PASS (target: 4 digits)
+Reference 1.1807776628998 (arXiv:2509.14185 v1 Fig. 2f, read by subagent); 1.18078 in arXiv:2201.06780.
+
+| quad step h | L / Lc | n | lam | sup residual |
+|---|---|---|---|---|
+| 0.2 | 40 / 22 | 72 | 1.18077944560844 | 7e-13 |
+| 0.1 | 40 / 22 | 48, 72, 96 | 1.18077767678473 | 2e-13 |
+| 0.05 | 40 / 22 | 96 | 1.18077766309102 | 3e-14 |
+| 0.025 | 40 / 22 | 96 | 1.18077766290000 | 9e-14 |
+| 0.025 | 55 / 28 | 96 | 1.18077766289987 | 4e-14 |
+| 0.0125 | 40 / 22 | 96 | 1.18077766289987 | 3e-14 |
+
+lam_0 = 1.1807776628999 (last digit uncertain), U'(0) = 1.590388831450. Agreement with the published value
+to 13 significant digits, lam solved as an unknown. All 12 starts lam0 in [0.3, 2.2] at n = 24 converge to it.
+Warning recorded: the residual is NOT a reliable error indicator here. At h = 0.1 the residual was 2e-13
+while lam was wrong by 1.4e-8, because the quadrature error is a consistent perturbation of the operator.
+Only the h-refinement exposed it. The lam scan at fixed lam (n = 32) shows an order-one V at 1.18: the
+stable exponent is sharply determined, as you predicted in Q2.
+
+### Unstable profiles — NOT reproduced (negative result, please read)
+- With lam free, starts below about 0.75 do not converge. They creep along a valley: lam 0.60 -> 0.499
+  (300 its) -> 0.4526 (600 more), sup residual 7e-5 -> 1e-5, passing 0.6057 and 0.4713 without stopping.
+- lam fixed at the published 0.6057337012032 and at 0.6040, 0.6075, 0.5900, 600 iterations each, n = 48
+  (`runs/ccf_scan_fixed48.out`): residual l2 6.2e-5, 5.9e-5, 6.6e-5, 3.8e-5. No dip at the published value;
+  the residual just falls as lam falls. None converged; trailing coefficients about 1e-4, |c_k| flat near
+  1e-3 for k = 12..32 (the stable profile's reach 1e-11 by k = 44).
+- So in this basin there is a continuum of near-solutions that are not smooth in s, and the smooth unstable
+  profile is either in another basin or not distinguished at n = 48. This is the Burgers 1/4 situation again,
+  but I have not found the selecting condition:
+  - The origin gives nothing new. With lam = 2U'(0) - 2 imposed, order y^(2j) of the Burgers form reads
+    theta_j (j-1) lam = sum_{i=1}^{j-1} 2 (j-i) u_i theta_(j-i): no resonance, every order is solvable. A
+    local term B|y|^nu at the origin is excluded at leading order unless nu = 2. (Derived here, unchecked.)
+  - Transport speed (1+lam) - U/y stays positive on the valley solutions (0.30 at the origin, 1.57 at
+    infinity), so there is no interior stagnation point.
+  - That leaves the far field (a tail power off the s-lattice) or complex singularities near the real axis.
+- Also: the solver is slow in the valley (0.7 s per iteration, hundreds of iterations). At fixed lam the
+  residual is quadratic in c, which I have not exploited.
+
+### Prior art (Sonnet subagent, `runs/lit_prior_art_ccf.md`; not verified by me)
+- 2509.14185 has only v1; "0.4703" in its text is a typo for the Fig. 2f value 0.4713248638620. A follow-up,
+  arXiv:2511.22819, gives lam_2 = 0.47132422 (differs at the 7th digit) and found no third profile in
+  [0.455, 0.4713]. arXiv:2610.30492 (ODIL, Chebyshev + Gauss-Newton) reproduces the three profiles with
+  the published lam values. So "resolve the typo" is no longer a contribution.
+- No rigorous or computer-assisted proof of an unstable profile was found for any of these models.
+- Open and reachable: an independent lam_2 beyond 6 digits; a third CCF profile; a rigorous proof.
+
+### Questions for the math session
+1. What selects the smooth unstable CCF profiles? Where is the general solution of
+   -lam Theta + ((1+lam) y - H Theta) Theta' = 0 (lam below lam_0, Theta ~ theta_1 y^2 at 0) non-smooth:
+   at infinity (which tail exponents are allowed beyond y^(lam/(1+lam)) times powers of y^(-1/(1+lam))?),
+   or through complex singularities? I need the row to add, as with r5 for Burgers.
+2. Is the unstable profile perhaps not of the form Theta ~ y^2 at the origin (e.g. Omega'(0) = 0)?
+   arXiv:2201.06780 pins the unstable solution with a condition at y = 0.5 instead of Omega'(0) = -2.
+3. For the stable profile the trapezoid error behaves like a strip half-width of about 0.15 in xi = asinh(y).
+   Does that match a known complex singularity of the profile?

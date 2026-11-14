@@ -3,17 +3,18 @@ at once on the GPU (multi-start, parameter scans). Same step as lm.py (column-sc
 QR of the damped Jacobian), with per-problem damping and acceptance.
 """
 import torch
-from torch.func import jacrev, vmap
+from torch.func import jacfwd, jacrev, vmap
 
 
-def batched_lm(resid, P0, aux=None, max_iter=300, tol=1e-14, mu0=1e-3, chunk=64, stall=10):
+def batched_lm(resid, P0, aux=None, max_iter=300, tol=1e-14, mu0=1e-3, chunk=64, stall=10, fwd=False):
     """resid(p[, aux_i]) -> [m] for one problem. P0: [B, P]. aux: [B, ...] or None.
     Returns p [B,P], sup residual [B], iterations used [B]."""
+    jac = (lambda f, **k: jacfwd(f, **{q: v for q, v in k.items() if q != "chunk_size"})) if fwd else jacrev
     if aux is None:
-        rb, Jb = vmap(resid), vmap(jacrev(resid, chunk_size=chunk))
+        rb, Jb = vmap(resid), vmap(jac(resid, chunk_size=chunk))
         R = lambda p: rb(p); Jf = lambda p: Jb(p)
     else:
-        rb, Jb = vmap(resid), vmap(jacrev(resid, argnums=0, chunk_size=chunk))
+        rb, Jb = vmap(resid), vmap(jac(resid, argnums=0, chunk_size=chunk))
         R = lambda p: rb(p, aux); Jf = lambda p: Jb(p, aux)
     p = P0.clone()
     B, P = p.shape

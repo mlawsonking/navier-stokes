@@ -21,3 +21,8 @@ Reproduce:
 - `origin_trial.py` / `.out` — origin rows with white-noise starts (mostly fails to converge; kept as a record).
 - `origin_continuation.py` / `.out` — origin rows, decaying-noise multi-start at n = 48, continuation to 96, 192. PASS.
 - `lit_2a_notes.md` — literature notes for rung 2a from a Sonnet subagent; not verified by the builder.
+- `lit_prior_art_ccf.md` — prior-art notes (Sonnet subagent); not verified by the builder.
+- `ccf_operator_check.py` — CCF quadrature operators vs the exact CLM pair.
+- `ccf_first.py`, `ccf_continue.py` — CCF multi-start and continuation (env H, L, LC, NGL set the quadrature).
+- `ccf_scan.py`, `ccf_scan2.py`, `ccf_scan.jsonl`, `ccf_scan_*.out` — fixed-lam scans (stable V; unstable valley).
+- `*.pt` — saved parameter vectors [lam, c_0..c_(n-1)] (torch.load).

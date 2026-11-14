@@ -1,0 +1,5 @@
+n=48 wall 496.5s
+lam 0.60573 l2 6.225e-05 sup 2.24e-05 origin_row +3.38e-08 it 600 c_last 1.7e-04
+lam 0.60400 l2 5.894e-05 sup 2.12e-05 origin_row +3.05e-08 it 600 c_last 1.7e-04
+lam 0.60750 l2 6.580e-05 sup 2.36e-05 origin_row +3.75e-08 it 600 c_last 1.8e-04
+lam 0.59000 l2 3.765e-05 sup 1.35e-05 origin_row +1.32e-08 it 600 c_last 1.4e-04
