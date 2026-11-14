@@ -619,3 +619,102 @@ Steps of 0.02 in a are in `runs/gclm_u1_branch.jsonl` and the `.out` files.
 2. The exact non-smooth profiles lam = -a of arXiv:2603.25104: are they the limit of this branch in some
    sense (the peak sharpening into their singularity)? lam_1(a) + a is 0.39 at a = -1 and 0.40 at a = -0.7.
 3. lam_2: I need the correct family ansatz (see the previous update, item 3) or a better idea for a start.
+
+
+## Builder update 2026-11-14 (fourth) — non-smooth family solver, lam_2 pinned, verification method changed
+
+### What is new in the code
+- `gpu_solver/ccf_sing.py`: CCF (a = -1) in Burgers form, -lam Theta + ((1+lam) y - H Theta) Theta' = 0, on the grid
+  y = exp(xi), with the origin ansatz
+      Theta = r^beta (1-s)^(mu/2) [ N_0(s) + sum_{j=1..J} (1-s)^(j(mu-1)/2) N_j(s) ],
+  mu an unknown tied to the solution by the origin relation mu = lam/(1 + lam - U'(0)) (derived here, first
+  Taylor order of the Burgers form; NOT checked against the literature — the literature agent found no
+  published exponent formula). `free=(False, True)`: family at fixed lam, mu unknown. `free=(True, False)`:
+  smooth profile, mu = 2, lam unknown.
+- Peak-following quadrature grids: `EGrid(cluster=("box", xi_p, c, D))` (flat-top, density D for |xi - xi_p| < c)
+  and `ccf.Grid(cluster=(xi_p, w, A))` (Lorentzian). Analytic maps, so the trapezoid rule stays spectral.
+- `runs/quad_sharp_pair_check.py`: exact Hilbert pair with a sharp peak (G = i/(z-z0) + i/(z+conj z0)).
+  Plain h = 0.0125 gives U' error 5e-2 for a pole at distance 0.05 and 4.6 at distance 0.02; the clustered
+  grid gives 1e-11 for both.
+
+### CORRECTION that affects earlier updates: the residual at the collocation rows is not the residual
+For the sinh-mapped (peak-concentrated) basis the fit can be 1e-11 at its own rows and far larger between
+them. Measured on the third update's branch solutions (fit on plain h = 0.0125), residual on a plain h/2 grid:
+a = -1.16..-1.36: 1e-11..1e-12 (fine); a = -1.00: 4e-9; a = -0.80: 3e-8; a = -0.76: 5e-7; a = -0.72: 6e-5;
+a = -0.68: 2e-3; a = -0.60: 0.16. The quadrature itself was consistent (U agrees to 1e-12 between h and h/3);
+the rows were simply too sparse at the peak for the number of basis functions concentrated there. I also had
+a bug in the first clustered sinh grid (dense zone centred off the peak; fixed, `tp` iteration in `ccf.Grid`).
+All numbers below are accepted only if the residual on a second, differently placed and denser grid agrees
+with the fit residual ("OFF" in the logs, `res_offgrid` in the jsonl).
+Consequence for the third update's table: the lam_1(a) VALUES are unchanged to 12 digits by the re-run with
+correct clustering (a = -0.80: 0.397947442081, -0.78: 0.377182295841, -0.76: 0.356419756395,
+-0.74: 0.335659880995, on-grid and off-grid residual both 2e-11), but the "coarse" column of that table for
+a >= -0.74 (0.3356598768, 0.2941484616) was wrong in the 8th-9th digit, as the fine column already showed.
+
+### The non-smooth family between lam_1 and lam_2 (a = -1)
+mu(lam) from `runs/sing_track.py` (clustered grid from lam = 0.515 down; n0 = 384, h = 0.00625):
+| lam | mu | U'(0) | peak of |Omega| (d = 0.1) | residual (on = off grid) |
+|---|---|---|---|---|
+| 0.6057337012 (lam_1) | 2 | 1.3028668506 | 1.590 | 5e-13 |
+| 0.600 | 1.9912253450 | 1.29867800 | 1.639 | 9e-13 |
+| 0.580 | 1.9626565578 | 1.28448217 | 1.841 | 7e-12 |
+| 0.560 | 1.9398944358 | 1.27132450 | 2.113 | (plain grid: off-grid 3e-10) |
+| 0.530 | 1.9258699104 | 1.25479969 | 2.760 | 1e-10 (minimum of mu is near here) |
+| 0.510 | 1.9363088272 | 1.24661226 | 3.516 | 4e-10 |
+| 0.500 | 1.9484264786 | 1.24338267 | 4.096 | 1e-9 |
+| 0.490 | 1.9646969360 | 1.24059767 | 4.929 | 2e-9 |
+| 0.480 | 1.9836894278 | 1.23802664 | 6.242 | 1e-8 |
+| 0.47132422777 (lam_2) | 2 | 1.23566211388 | 8.2387 at y = 7.722 | 6e-10 |
+So the family is slightly LESS regular than smooth between the two profiles (mu < 2, minimum 1.9259) and
+returns to mu = 2 at lam_2. Below lam_2 it goes above 2 (lam = 0.4713: mu = 2.00013; run in progress).
+The published picture (Fig. 3 of 2511.22819: peak 3.7 at lam = 0.51) matches my 3.52 at 0.510 / 3.78 at 0.505.
+
+### lam_2 (second unstable CCF profile), lam solved as an unknown
+Pinned with mu = 2 fixed and lam free, then re-fitted with the singular blocks REMOVED (smooth basis only):
+the smooth-only start already has residual 2e-10, i.e. the profile is smooth.
+| n0 | h | grid | lam_2 | residual on-grid | off-grid | last coefficients |
+|---|---|---|---|---|---|---|
+| 448 | 0.00625 | box c = 0.15, D = 40 | 0.47132422778557 | 1.4e-9 | 1.8e-9 | 6e-12 |
+| 640 | 0.00625 | box c = 0.15, D = 40 | 0.47132422776779 | 5.8e-10 | 1.1e-9 | 1e-14 |
+| 800 | 0.00625 | box c = 0.15, D = 40 | 0.47132422776818 | 5.8e-10 | 1.1e-9 | 2e-14 |
+| 640 | 0.005 | box c = 0.15, D = 40 | 0.47132422776520 | 8.6e-10 | 1.6e-9 | 2e-14 |
+| 640 | 0.00625 | box c = 0.30, D = 30 | 0.47132422776261 | 4.6e-10 | 1.2e-9 | 3e-14 |
+lam_2 = 0.4713242278 (spread of the four resolved runs 6e-12; I quote 10 digits). Peak |Omega| = 8.2387 at
+y = 7.7220, U'(0) = 1.2356621139 (normalisation Omega'(0) = -0.1).
+Literature: 2511.22819 gives 0.47132422 (8 digits) — agrees. 2509.14185 gives 0.4713248638620 according to my
+earlier note, and 0.4703 in the v1 HTML according to the agent — mine disagrees with the former in the 7th
+digit. The agent also reports that Fig. 5 of 2511.22819 scans lam in [0.471324222, 0.471324226]; if their best
+value lies inside that window it differs from mine by 2e-9 to 6e-9. Not resolved; I have not read that figure.
+Unexplained: the residual floor (6e-10) is far above the coefficient tail (1e-14).
+Withdrawn: the earlier value 0.47132422812 quoted in commit c002021 (fit with singular blocks present and
+too few rows on the peak shoulder; off by 3.5e-10).
+
+### First unstable gCLM branch, re-run with correct clustering (n = 256, h = 0.0125, on-grid = off-grid residual)
+| a | lam_1 | residual |
+|---|---|---|
+| -0.80 | 0.397947442081 | 2e-11 |
+| -0.70 | (see jsonl, case gclm-u1-branch-upe256) | |
+| -0.56 | 0.148956596374 | 1e-10 |
+| -0.52 | 0.107507487740 | 9e-11 |
+| -0.50 | 0.086790210136 | 9e-11 |
+| -0.49 | 0.076433606190 | 1e-10 |
+| -0.46 | 0.045372879914 | 3e-10 |
+| -0.45 | 0.035022647103 | 4e-10 |
+| -0.44 | 0.024674269059 | 8e-10 |
+| -0.435 | 0.019500815257 | 7e-10 |
+The branch is still almost straight (slope -1.0347 here) and heads for lam_1 = 0 near a = -0.4162. The LM
+iteration count grows without bound as lam -> 0 (20 -> 530 per step), so the Jacobian is degenerating there;
+I do not know why yet. Withdrawn: every row of the earlier runs upc288/upw288 (clustering off the peak).
+
+### Negative results this round
+- Far-field blocks s^(2j(1+lam)) P_j(s) (`ccf_fast.FAR`) do not change anything: the mid-spectrum plateau was
+  not a far-field singularity. Left in the code, off by default.
+- Stepping the singular ansatz THROUGH mu = 2 is slow (even-j blocks are redundant with N_0 there). Restart
+  from the pinned smooth profile on the other side instead (`START=` in `runs/sing_track.py`).
+
+### Questions for the math session
+1. Is mu = lam/(1 + lam - U'(0)) and the exponent set mu + j(mu-1) + 2k right? The solver is consistent with
+   it (residual 1e-12 near lam_1 with four blocks), which is evidence, not a proof.
+2. mu < 2 between lam_1 and lam_2 and mu > 2 just below lam_2. Does the sign pattern alternate, and is there
+   a reason the excursion is so small (min mu = 1.926)?
+3. Why does the a-branch linearisation degenerate as lam_1 -> 0 (a -> -0.416)?

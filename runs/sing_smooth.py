@@ -23,7 +23,7 @@ F.MAP = cur
 for rnd in range(3):
     pk, ypk, x0, fw = measure(p)
     new = (x0, max(EPSF * fw, 0.002)); p = S.remap0(p, cur, new, shape, DEV); cur = new; F.MAP = cur
-    G = S.EGrid(h=h, device=DEV, cluster=(math.log(ypk), CW, CL * CW) if CL else None)
+    G = S.EGrid(h=h, device=DEV, cluster=("box", math.log(ypk), 0.15, 40.0) if CL else None)
     p[1] = 2.0; t0 = time.time()
     q, hist = S.lm(p, G, shape, free=(True, False), max_iter=200)
     r = S.residual(q, G, shape); c = q[2:2 + n0].abs(); pk, ypk, _, fw = measure(q)

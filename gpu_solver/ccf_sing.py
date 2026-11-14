@@ -26,14 +26,23 @@ class EGrid:
     xi(tau) = tau - A atan((tau - tau_p)/w): analytic, and denser by 1/(1 - A/w) around xi_p (the peak), so the
     rows keep up with a basis that is concentrated there. cluster = None is the plain exponential grid."""
     def __init__(self, h=0.0125, L=40.0, Lc0=12.0, Lc=22.0, n_gl=128, device="cuda", cluster=None):
-        J = int(round(L / h))
         self.h = h
         if cluster is None:
             xi = lambda t: t; dxi = lambda t: torch.ones_like(t)
+        elif cluster[0] == "box":
+            # flat-top: density D for |xi - xp| < c (smooth edges), xi(tau) = tau - A B(tau - xp),
+            # B' = [atan((u+b)/w) - atan((u-b)/w)]/pi, b = c D, w = b/5. Analytic; singularities at +-b +- i w.
+            _, xp, c, D = cluster
+            b = c * D; w = b / 5; A = (1 - 1 / D) / (2 * math.atan(5.0) / math.pi)
+            Fp = lambda u: u * torch.atan(u / w) - (w / 2) * torch.log(w * w + u * u)
+            xi = lambda t: t - A * (Fp(t - xp + b) - Fp(t - xp - b)) / math.pi
+            dxi = lambda t: 1 - A * (torch.atan((t - xp + b) / w) - torch.atan((t - xp - b) / w)) / math.pi
+            L, Lc0, Lc = L + A * b, Lc0 + A * b, Lc + A * b      # the map compresses the far ranges by A b
         else:
             xp, w, A = cluster
             xi = lambda t: t - A * torch.atan((t - xp) / w)
             dxi = lambda t: 1 - (A / w) / (1 + ((t - xp) / w) ** 2)
+        J = int(round(L / h))
         tau = h * torch.arange(-J, J + 1, dtype=DT, device=device)
         self.ys = torch.exp(xi(tau))
         self.w = h * dxi(tau) * self.ys
@@ -144,7 +153,7 @@ def lm(p0, G, shape, free=(False, True), max_iter=200, tol=1e-14, mu0=1e-6, verb
             print(f"  it {it} sup {hist[-1][1]:.2e} lam {p[0].item():.12f} mu {p[1].item():.10f} damp {damp:.1e}", flush=True)
         if hist[-1][1] < tol or (rel < 1e-13 and damp < 1e-12) or step.abs().max().item() < 1e-16:
             break
-        if len(hist) > stall and hist[-1][1] > 0.5 * hist[-1 - stall][1] and hist[-1][1] < 1e-6:
+        if len(hist) > stall and hist[-1][1] > 0.5 * hist[-1 - stall][1] and hist[-1][1] < 1e-8:
             break                                   # converged to the noise floor: sup no longer halving
     return p, hist
 

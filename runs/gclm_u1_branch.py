@@ -42,7 +42,7 @@ while (a - a1) * sgn <= 1e-12:
     if CL: G = C.Grid(h=h, L=40.0, Lc=22.0, device=DEV, n_gl=128, cluster=(math.asinh(ypk), 0.5, CL * 0.5))
     if prev is not None:                       # secant predictor in a (previous solution carried to the same map)
         guess = p + (a - ap) / (ap - aprev) * (p - remap(prev, prevmap, cur, n))
-    q, hist = F.lm(guess, G, a=a, lam_free=True, max_iter=(400 if prev is None else 100), mu0=float(os.environ.get('MU0', 1e-6)), stall=5)
+    q, hist = F.lm(guess, G, a=a, lam_free=True, max_iter=(400 if prev is None else int(os.environ.get('MAXIT', 100))), mu0=float(os.environ.get('MU0', 1e-6)), stall=5)
     r = F.residual(q[0], q[1:], G, a); sup = r.abs().max().item()
     G2 = C.Grid(h=h * 0.8, L=40.0, Lc=22.0, device=DEV, n_gl=128, cluster=(math.asinh(ypk) + 0.011, 0.4, 0.38))
     off = F.residual(q[0], q[1:], G2, a).abs().max().item(); del G2      # residual on a grid the fit never saw

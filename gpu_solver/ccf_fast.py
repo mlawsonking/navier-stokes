@@ -147,6 +147,6 @@ def lm(p0, G, a=-1.0, lam_free=True, max_iter=200, tol=1e-15, mu0=1e-3, verbose=
             print(f"  it {it} sup {hist[-1][1]:.2e} lam {p[0].item():.12f} mu {mu:.1e}", flush=True)
         if hist[-1][1] < tol or (rel < 1e-13 and mu < 1e-12) or step.abs().max().item() < 1e-16:
             break
-        if stall and len(hist) > stall and hist[-1][1] > 0.5 * hist[-1 - stall][1] and hist[-1][1] < 1e-6:
+        if stall and len(hist) > stall and hist[-1][1] > 0.5 * hist[-1 - stall][1] and hist[-1][1] < 1e-8:
             break                                   # at the noise floor: sup no longer halving
     return p, hist

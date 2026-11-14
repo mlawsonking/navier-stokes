@@ -5,7 +5,7 @@ from gpu_solver import ccf_sing as S, ccf_fast as F
 A = sys.argv; lam_end, step, tag = float(A[1]), float(A[2]), A[3]
 n0, nj, J, h = (int(A[4]), int(A[5]), int(A[6]), float(A[7])) if len(A) > 4 else (192, 8, 4, 0.0125)
 shape = (n0, nj, J); DEV = os.environ.get("DEV", "cuda"); EPSF = float(os.environ.get("EPSF", 0.66))
-G = S.EGrid(h=h, device=DEV); CL = float(os.environ.get('CLUSTER', 0.9))
+G = S.EGrid(h=h, device=DEV); CL = float(os.environ.get('CLUSTER', 40))
 yy = torch.exp(torch.linspace(math.log(0.3), math.log(30.0), 60001, dtype=S.DT, device=DEV))
 
 def measure(p, mp):
@@ -15,7 +15,12 @@ def measure(p, mp):
     sf = lambda v: (1 + v * v) ** (-al / 2)
     return pk, yy[i].item(), 2 * sf(yy[i].item()) - 1, 2 * (sf(yy[hw[0]].item()) - sf(yy[hw[-1]].item()))
 
-if os.environ.get("SRC"):
+if os.environ.get("START"):                       # start just below a smooth profile (ccf_sing smooth-only file)
+    x = torch.load(os.environ["START"]); p = x["p"].to(DEV); cur = tuple(x["map"])
+    nold = p.numel() - 2
+    p = torch.cat([p[:2 + min(nold, n0)], torch.zeros(max(0, n0 - nold) + nj * J, dtype=S.DT, device=DEV)])
+    sols = []; prev = None; lam = round(math.floor(p[0].item() / step) * step, 10)
+elif os.environ.get("SRC"):
     sols = torch.load(os.environ["SRC"]); last = sols[-1]; p = last["p"].to(DEV); cur = tuple(last["map"])
     prev = sols[-2]["p"].to(DEV); prevmap = tuple(sols[-2]["map"]); lam = round(p[0].item() - step, 10)
     nold = p.numel() - 2 - nj * J                       # resume at a larger n0: zero-pad the N_0 block (same map)
@@ -24,14 +29,14 @@ if os.environ.get("SRC"):
 else:
     old = (-0.14, 0.1); p, _ = S.from_smooth(torch.load("runs/ccf_u1_v_160_0.0125_0.1.pt").reshape(-1), old, old, shape, DEV)
     cur = old; sols = []; prev = None; lam = round(math.floor(p[0].item() / step) * step, 10)
-out = open("runs/sing_track.jsonl", "a"); t0 = time.time()
+out = open("runs/sing_track.jsonl", "a"); t0 = time.time(); step0 = step
 while lam >= lam_end - 1e-12:
     pk, ypk, x0, fw = measure(p, cur)
     new = (x0, max(EPSF * fw, 0.004)); p = S.remap0(p, cur, new, shape, DEV); cur = new
     guess = p.clone()
-    if CL: del G; torch.cuda.empty_cache(); G = S.EGrid(h=h, device=DEV, cluster=(math.log(ypk), 0.5, CL * 0.5))
+    if CL: del G; torch.cuda.empty_cache(); G = S.EGrid(h=h, device=DEV, cluster=("box", math.log(ypk), 0.15, CL))
     if prev is not None:
-        pr = S.remap0(prev, prevmap, cur, shape, DEV); f = (lam - p[0].item()) / (p[0].item() - pr[0].item())
+        pr = S.remap0(prev, prevmap, cur, shape, DEV); f = (lam - p[0].item()) / (p[0].item() - pr[0].item()) if abs(p[0].item() - pr[0].item()) > 1e-12 else 0.0
         guess = p + f * (p - pr)
     guess[0] = lam
     q, hist = S.lm(guess, G, shape, free=(False, True), max_iter=60)
@@ -46,5 +51,6 @@ while lam >= lam_end - 1e-12:
         if step < 2e-4: print("stopping: step too small"); break
         continue
     prev, prevmap, p = p, cur, q
+    step = min(step * 1.5, step0)
     sols.append(dict(lam=lam, p=q.clone().cpu(), map=cur)); torch.save(sols, f"runs/sing_track_{tag}.pt")
     lam = round(lam - step, 10)
