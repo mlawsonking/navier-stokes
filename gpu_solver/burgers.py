@@ -138,3 +138,66 @@ def residual_vec_analytic(params, y, n, u3_zero=False, z=None, w=1.0):
     if z is None:
         return base
     return torch.cat([base, w * residual_complex(params, z, n)])
+
+
+# ---- origin Taylor rows (math session, HANDOFF Q1) -------------------------------
+def _smul(a, b):
+    """Truncated product of two power series (coefficient vectors of equal length)."""
+    M = a.shape[0]
+    return torch.stack([sum(a[i] * b[j - i] for i in range(j + 1)) for j in range(M)])
+
+
+def cheb_origin_table(n, M, device="cuda"):
+    """d[k,j]: T_k(1+2x) = sum_j d[k,j] x^j,  d[k,j] = prod_{i<j} (k^2-i^2)/((i+1/2)(i+1))."""
+    k = torch.arange(n, dtype=DT, device=device)
+    cols = [torch.ones(n, dtype=DT, device=device)]
+    for i in range(M - 1):
+        cols.append(cols[-1] * (k * k - i * i) / ((i + 0.5) * (i + 1)))
+    return torch.stack(cols, 1)
+
+
+def origin_series(params, D):
+    """Taylor coefficients v_j of V(t), U = y V(y^2), t = y^2, from the ansatz, exactly
+    (power-series arithmetic, no autodiff). u_(2j+1) = v_j; v_0 = -1."""
+    lam, c = params[0], params[1:]
+    M = D.shape[1]
+    a = 1.0 / (1.0 + lam)
+    b = [torch.ones_like(lam)]
+    for j in range(1, M):
+        b.append(b[-1] * (-a / 2 - j + 1) / j)
+    s = torch.stack(b)                                   # s(t) = (1+t)^(-a/2)
+    e0 = torch.zeros(M, dtype=s.dtype, device=s.device); e0[0] = 1.0
+    dl = s - e0                                          # s - 1 = O(t)
+    pj = c @ D                                           # P = sum_j pj (s-1)^j
+    Pt, pw = pj[0] * e0, e0
+    for j in range(1, M):
+        pw = _smul(pw, dl)
+        Pt = Pt + pj[j] * pw
+    N = e0 - _smul(_smul(s, dl), Pt)                     # N = 1 + s(1-s) P
+    return -_smul(s, N)
+
+
+def origin_rows(params, D):
+    """Coefficients of t^1..t^(M-1) in R/y = -lam V + ((1+lam) + V)(V + 2 t V'):
+    r3, r5, r7, ...  Also returns v (so u3 = v[1])."""
+    lam = params[0]
+    v = origin_series(params, D)
+    M = v.shape[0]
+    j = torch.arange(M, dtype=v.dtype, device=v.device)
+    Up = (1 + 2 * j) * v                                 # series of U'
+    e0 = torch.zeros(M, dtype=v.dtype, device=v.device); e0[0] = 1.0
+    Rs = -lam * v + _smul((1 + lam) * e0 + v, Up)
+    return Rs[1:], v
+
+
+def residual_vec_origin(params, y, n, D, u3_zero=False, w=1.0):
+    """Collocation residual + origin Taylor rows at order-one weight. With u3_zero the
+    constraint row is u3 = 0 taken from the series."""
+    lam = params[0]
+    U, Uy, s = profile(params, y, n)
+    R = (-lam * U + ((1 + lam) * y + U) * Uy) / (y * s)
+    rows, v = origin_rows(params, D)
+    parts = [R, w * rows]
+    if u3_zero:
+        parts.append(w * v[1].reshape(1))
+    return torch.cat(parts)

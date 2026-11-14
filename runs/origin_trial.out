@@ -1,0 +1,96 @@
+n=48 u3z=True seed=0 lam0=0.200 -> lam=0.1483022030446 err=1.0e-01 prof=3.3e-01 res=7.0e-09 u5=0.000000 it=400
+n=48 u3z=True seed=0 lam0=0.220 -> lam=0.1548064704026 err=9.5e-02 prof=3.1e-01 res=2.1e-08 u5=0.000000 it=400
+n=48 u3z=True seed=0 lam0=0.240 -> lam=0.2500000000000 err=7.2e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=38
+n=48 u3z=True seed=0 lam0=0.260 -> lam=0.1502640143838 err=1.0e-01 prof=3.2e-01 res=1.0e-08 u5=0.000000 it=400
+n=48 u3z=True seed=0 lam0=0.280 -> lam=0.2500000000000 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=33
+n=48 u3z=True seed=0 lam0=0.300 -> lam=0.2500000000000 err=7.4e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=127
+n=48 u3z=True seed=0 lam0=0.330 -> lam=0.1533324022349 err=9.7e-02 prof=3.1e-01 res=1.7e-08 u5=0.000000 it=400
+n=48 u3z=True seed=0 lam0=0.360 -> lam=0.1549034666302 err=9.5e-02 prof=3.1e-01 res=2.1e-08 u5=0.000000 it=400
+n=48 u3z=True seed=1 lam0=0.200 -> lam=0.1526805436582 err=9.7e-02 prof=3.1e-01 res=1.5e-08 u5=0.000000 it=400
+n=48 u3z=True seed=1 lam0=0.220 -> lam=0.1546830695666 err=9.5e-02 prof=3.1e-01 res=2.1e-08 u5=0.000000 it=400
+n=48 u3z=True seed=1 lam0=0.240 -> lam=0.2500000000000 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=38
+n=48 u3z=True seed=1 lam0=0.260 -> lam=0.2500000000000 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=29
+n=48 u3z=True seed=1 lam0=0.280 -> lam=0.2500000000000 err=7.2e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=78
+n=48 u3z=True seed=1 lam0=0.300 -> lam=0.1554125026214 err=9.5e-02 prof=3.1e-01 res=2.3e-08 u5=0.000000 it=400
+n=48 u3z=True seed=1 lam0=0.330 -> lam=0.2500000000000 err=7.4e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=274
+n=48 u3z=True seed=1 lam0=0.360 -> lam=0.1584181913545 err=9.2e-02 prof=3.0e-01 res=3.5e-08 u5=0.000000 it=400
+== n=48 u3_zero=True: 7/16 pass, batch wall 46.4s
+
+n=96 u3z=True seed=0 lam0=0.200 -> lam=0.1880340254685 err=6.2e-02 prof=2.0e-01 res=1.4e-07 u5=0.000000 it=400
+n=96 u3z=True seed=0 lam0=0.220 -> lam=0.0506994146790 err=2.0e-01 prof=6.3e-01 res=4.6e-07 u5=-0.000000 it=400
+n=96 u3z=True seed=0 lam0=0.240 -> lam=0.0567445547170 err=1.9e-01 prof=6.2e-01 res=3.4e-08 u5=-0.000000 it=400
+n=96 u3z=True seed=0 lam0=0.260 -> lam=0.0529298117917 err=2.0e-01 prof=6.3e-01 res=8.2e-08 u5=-0.000000 it=400
+n=96 u3z=True seed=0 lam0=0.280 -> lam=0.2500000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=337
+n=96 u3z=True seed=0 lam0=0.300 -> lam=0.3009510178694 err=5.1e-02 prof=4.5e-01 res=1.7e+00 u5=-1042.808264 it=400
+n=96 u3z=True seed=0 lam0=0.330 -> lam=0.3411125939473 err=9.1e-02 prof=7.8e-01 res=1.5e+00 u5=-9.147353 it=400
+n=96 u3z=True seed=0 lam0=0.360 -> lam=0.3679425521315 err=1.2e-01 prof=5.5e-01 res=1.1e+00 u5=-2190.905745 it=400
+n=96 u3z=True seed=1 lam0=0.200 -> lam=0.1644477193884 err=8.6e-02 prof=2.8e-01 res=6.0e-10 u5=0.000000 it=400
+n=96 u3z=True seed=1 lam0=0.220 -> lam=0.1305442917564 err=1.2e-01 prof=3.9e-01 res=2.3e-07 u5=-0.000000 it=400
+n=96 u3z=True seed=1 lam0=0.240 -> lam=0.2500000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=119
+n=96 u3z=True seed=1 lam0=0.260 -> lam=0.2500000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=51
+n=96 u3z=True seed=1 lam0=0.280 -> lam=0.3175507612146 err=6.8e-02 prof=3.0e-01 res=1.1e+00 u5=-211.297609 it=400
+n=96 u3z=True seed=1 lam0=0.300 -> lam=0.2983313015547 err=4.8e-02 prof=6.6e-01 res=1.1e+00 u5=-2296.698268 it=400
+n=96 u3z=True seed=1 lam0=0.330 -> lam=0.3498209751292 err=1.0e-01 prof=3.5e-01 res=1.7e+00 u5=-99.939834 it=400
+n=96 u3z=True seed=1 lam0=0.360 -> lam=0.1943113576445 err=5.6e-02 prof=1.8e-01 res=4.2e-07 u5=0.000000 it=400
+== n=96 u3_zero=True: 3/16 pass, batch wall 74.9s
+
+n=192 u3z=True seed=0 lam0=0.200 -> lam=0.1987909308279 err=5.1e-02 prof=3.2e+00 res=6.6e+00 u5=2620.657726 it=400
+n=192 u3z=True seed=0 lam0=0.220 -> lam=0.2500000000358 err=3.6e-11 prof=1.7e-05 res=6.9e-07 u5=0.513935 it=400
+n=192 u3z=True seed=0 lam0=0.240 -> lam=0.2873278923347 err=3.7e-02 prof=4.2e-01 res=2.9e+00 u5=-3894.788199 it=400
+n=192 u3z=True seed=0 lam0=0.260 -> lam=0.2497597645356 err=2.4e-04 prof=1.3e+00 res=2.9e+00 u5=5576.639746 it=400
+n=192 u3z=True seed=0 lam0=0.280 -> lam=0.2500000000010 err=9.7e-13 prof=7.6e-06 res=3.1e-07 u5=1.412104 it=400
+n=192 u3z=True seed=0 lam0=0.300 -> lam=0.2835927345067 err=3.4e-02 prof=1.1e-01 res=2.8e-06 u5=0.000000 it=400
+n=192 u3z=True seed=0 lam0=0.330 -> lam=0.3346037200299 err=8.5e-02 prof=3.3e-01 res=4.1e+00 u5=-6870.412396 it=400
+n=192 u3z=True seed=0 lam0=0.360 -> lam=0.3628643356806 err=1.1e-01 prof=4.2e-01 res=4.3e+00 u5=-6968.199692 it=400
+n=192 u3z=True seed=1 lam0=0.200 -> lam=0.2783309585723 err=2.8e-02 prof=9.2e-02 res=2.2e-06 u5=0.000000 it=400
+n=192 u3z=True seed=1 lam0=0.220 -> lam=0.2227427079701 err=2.7e-02 prof=3.6e+00 res=5.7e+00 u5=203.707975 it=400
+n=192 u3z=True seed=1 lam0=0.240 -> lam=0.0310013081154 err=2.2e-01 prof=6.9e-01 res=1.9e-05 u5=-0.000000 it=400
+n=192 u3z=True seed=1 lam0=0.260 -> lam=0.2873807958207 err=3.7e-02 prof=1.7e+00 res=4.5e+00 u5=-4079.319100 it=400
+n=192 u3z=True seed=1 lam0=0.280 -> lam=0.2868009929531 err=3.7e-02 prof=1.2e-01 res=3.1e-06 u5=0.000000 it=400
+n=192 u3z=True seed=1 lam0=0.300 -> lam=0.2500000000320 err=3.2e-11 prof=8.2e-05 res=3.9e-06 u5=-2.793517 it=400
+n=192 u3z=True seed=1 lam0=0.330 -> lam=0.3309132258601 err=8.1e-02 prof=4.2e+00 res=5.8e+00 u5=-5979.454852 it=400
+n=192 u3z=True seed=1 lam0=0.360 -> lam=0.3639973280121 err=1.1e-01 prof=7.1e-01 res=4.7e+00 u5=-7637.040821 it=400
+== n=192 u3_zero=True: 0/16 pass, batch wall 142.6s
+
+n=48 u3z=False seed=0 lam0=0.400 -> lam=0.1543255934332 err=3.5e-01 prof=1.1e+00 res=2.0e-08 u5=0.000000 it=400
+n=48 u3z=False seed=0 lam0=0.450 -> lam=0.1554354067287 err=3.4e-01 prof=1.1e+00 res=2.3e-08 u5=0.000000 it=400
+n=48 u3z=False seed=0 lam0=0.550 -> lam=0.4994578512096 err=5.4e-04 prof=3.0e-01 res=1.7e-01 u5=-129.133024 it=400
+n=48 u3z=False seed=0 lam0=0.620 -> lam=0.4999999999998 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=66
+n=48 u3z=False seed=0 lam0=0.700 -> lam=0.1606422129529 err=3.4e-01 prof=1.1e+00 res=4.6e-08 u5=0.000000 it=400
+n=48 u3z=False seed=0 lam0=0.800 -> lam=0.4999999999998 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=178
+n=48 u3z=False seed=1 lam0=0.400 -> lam=0.1616928984817 err=3.4e-01 prof=1.1e+00 res=5.2e-08 u5=0.000000 it=400
+n=48 u3z=False seed=1 lam0=0.450 -> lam=0.1570428197271 err=3.4e-01 prof=1.1e+00 res=2.9e-08 u5=0.000000 it=400
+n=48 u3z=False seed=1 lam0=0.550 -> lam=0.4990423627106 err=9.6e-04 prof=1.3e-01 res=1.6e-01 u5=-102.027572 it=400
+n=48 u3z=False seed=1 lam0=0.620 -> lam=0.4966042027015 err=3.4e-03 prof=7.4e-02 res=2.6e-01 u5=-21.556329 it=400
+n=48 u3z=False seed=1 lam0=0.700 -> lam=0.1587217337390 err=3.4e-01 prof=1.1e+00 res=3.6e-08 u5=0.000000 it=400
+n=48 u3z=False seed=1 lam0=0.800 -> lam=0.1521753778359 err=3.5e-01 prof=1.1e+00 res=1.4e-08 u5=0.000000 it=400
+== n=48 u3_zero=False: 2/12 pass, batch wall 42.5s
+
+n=96 u3z=False seed=0 lam0=0.400 -> lam=0.2832215066440 err=2.2e-01 prof=8.9e-01 res=9.8e-01 u5=-2.437538 it=400
+n=96 u3z=False seed=0 lam0=0.450 -> lam=0.1876996446125 err=3.1e-01 prof=1.0e+00 res=1.4e-07 u5=0.000000 it=400
+n=96 u3z=False seed=0 lam0=0.550 -> lam=0.5000000000000 err=5.6e-17 prof=4.2e-14 res=2.7e-15 u5=-3.000000 it=351
+n=96 u3z=False seed=0 lam0=0.620 -> lam=0.3663509046812 err=1.3e-01 prof=1.6e+00 res=1.5e+00 u5=-56.149695 it=400
+n=96 u3z=False seed=0 lam0=0.700 -> lam=0.5714061237508 err=7.1e-02 prof=1.3e+00 res=1.7e+00 u5=-665.460470 it=400
+n=96 u3z=False seed=0 lam0=0.800 -> lam=0.4431416088416 err=5.7e-02 prof=2.0e+00 res=1.3e+00 u5=-20.119175 it=400
+n=96 u3z=False seed=1 lam0=0.400 -> lam=0.4091753488551 err=9.1e-02 prof=5.4e-01 res=1.1e+00 u5=-746.981447 it=400
+n=96 u3z=False seed=1 lam0=0.450 -> lam=0.4666352815358 err=3.3e-02 prof=8.6e-01 res=5.3e-01 u5=-2705.113992 it=400
+n=96 u3z=False seed=1 lam0=0.550 -> lam=0.5036116182196 err=3.6e-03 prof=1.2e+00 res=5.7e-01 u5=-1923.556157 it=400
+n=96 u3z=False seed=1 lam0=0.620 -> lam=0.5000000000000 err=0.0e+00 prof=4.8e-14 res=3.1e-15 u5=-3.000000 it=370
+n=96 u3z=False seed=1 lam0=0.700 -> lam=0.1950649032941 err=3.0e-01 prof=9.8e-01 res=5.0e-07 u5=0.000000 it=400
+n=96 u3z=False seed=1 lam0=0.800 -> lam=0.5000038106957 err=3.8e-06 prof=1.3e-03 res=3.6e-04 u5=-4.424034 it=400
+== n=96 u3_zero=False: 2/12 pass, batch wall 68.5s
+
+n=192 u3z=False seed=0 lam0=0.400 -> lam=0.4017134007044 err=9.8e-02 prof=2.5e+00 res=2.2e+00 u5=-133188.998007 it=400
+n=192 u3z=False seed=0 lam0=0.450 -> lam=0.3772926309398 err=1.2e-01 prof=2.4e+00 res=2.9e+00 u5=-344.908145 it=400
+n=192 u3z=False seed=0 lam0=0.550 -> lam=0.4736737022637 err=2.6e-02 prof=3.2e+00 res=3.1e+00 u5=-432.954805 it=400
+n=192 u3z=False seed=0 lam0=0.620 -> lam=0.6391727535735 err=1.4e-01 prof=3.2e+00 res=5.6e+00 u5=-10134.582466 it=400
+n=192 u3z=False seed=0 lam0=0.700 -> lam=0.6715090535587 err=1.7e-01 prof=3.0e+00 res=7.1e+00 u5=-9342.797699 it=400
+n=192 u3z=False seed=0 lam0=0.800 -> lam=0.3599135033732 err=1.4e-01 prof=4.5e-01 res=4.3e-06 u5=-0.000000 it=400
+n=192 u3z=False seed=1 lam0=0.400 -> lam=0.3627858404269 err=1.4e-01 prof=2.0e+00 res=3.4e+00 u5=-291.398376 it=400
+n=192 u3z=False seed=1 lam0=0.450 -> lam=0.4503849544221 err=5.0e-02 prof=2.1e+00 res=3.2e+00 u5=-2685.672419 it=400
+n=192 u3z=False seed=1 lam0=0.550 -> lam=0.5084688175356 err=8.5e-03 prof=3.3e+00 res=4.4e+00 u5=-1533.970682 it=400
+n=192 u3z=False seed=1 lam0=0.620 -> lam=0.5379428531542 err=3.8e-02 prof=4.2e+00 res=5.0e+00 u5=-338.793015 it=400
+n=192 u3z=False seed=1 lam0=0.700 -> lam=0.4999831120396 err=1.7e-05 prof=6.1e-04 res=2.0e-04 u5=-0.474359 it=400
+n=192 u3z=False seed=1 lam0=0.800 -> lam=0.5322909003328 err=3.2e-02 prof=5.8e+00 res=3.2e+00 u5=-560.660159 it=400
+== n=192 u3_zero=False: 0/12 pass, batch wall 116.4s
+

@@ -1,0 +1,96 @@
+n=48 u3z=True seed=0 lam0=0.200 lam=0.250000000000007 err=7.2e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=33
+n=48 u3z=True seed=0 lam0=0.220 lam=0.250000000000007 err=7.2e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=32
+n=48 u3z=True seed=0 lam0=0.240 lam=0.250000000000007 err=7.4e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=35
+n=48 u3z=True seed=0 lam0=0.260 lam=0.250000000000007 err=7.2e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=33
+n=48 u3z=True seed=0 lam0=0.280 lam=0.250000000000007 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=33
+n=48 u3z=True seed=0 lam0=0.300 lam=0.250000000000007 err=7.2e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=34
+n=48 u3z=True seed=0 lam0=0.330 lam=0.250000000000007 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=34
+n=48 u3z=True seed=0 lam0=0.360 lam=0.250000000000007 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=32
+n=48 u3z=True seed=1 lam0=0.200 lam=0.250000000000007 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=34
+n=48 u3z=True seed=1 lam0=0.220 lam=0.250000000000007 err=7.4e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=37
+n=48 u3z=True seed=1 lam0=0.240 lam=0.250000000000007 err=7.4e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=37
+n=48 u3z=True seed=1 lam0=0.260 lam=0.250000000000007 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=35
+n=48 u3z=True seed=1 lam0=0.280 lam=0.250000000000007 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=35
+n=48 u3z=True seed=1 lam0=0.300 lam=0.250000000000007 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=35
+n=48 u3z=True seed=1 lam0=0.330 lam=0.250000000000007 err=7.4e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=33
+n=48 u3z=True seed=1 lam0=0.360 lam=0.250000000000007 err=7.3e-15 prof=5.6e-09 res=5.3e-10 u5=1.000001 it=36
+== multistart n=48 u3_zero=True: 16/16 pass, batch wall 8.1s
+
+n=96 u3z=True seed=0 lam0=0.200 lam=0.250000000000000 err=0.0e+00 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=36
+n=96 u3z=True seed=0 lam0=0.220 lam=0.250000000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=40
+n=96 u3z=True seed=0 lam0=0.240 lam=0.250000000000000 err=1.4e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=37
+n=96 u3z=True seed=0 lam0=0.260 lam=0.250000000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=37
+n=96 u3z=True seed=0 lam0=0.280 lam=0.250000000000000 err=8.3e-17 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=36
+n=96 u3z=True seed=0 lam0=0.300 lam=0.250000000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=37
+n=96 u3z=True seed=0 lam0=0.330 lam=0.250000000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=36
+n=96 u3z=True seed=0 lam0=0.360 lam=0.250000000000000 err=5.6e-17 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=35
+n=96 u3z=True seed=1 lam0=0.200 lam=0.250000000000000 err=0.0e+00 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=37
+n=96 u3z=True seed=1 lam0=0.220 lam=0.250000000000000 err=5.6e-17 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=37
+n=96 u3z=True seed=1 lam0=0.240 lam=0.250000000000000 err=0.0e+00 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=38
+n=96 u3z=True seed=1 lam0=0.260 lam=0.250000000000000 err=2.8e-17 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=36
+n=96 u3z=True seed=1 lam0=0.280 lam=0.250000000000000 err=8.3e-17 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=35
+n=96 u3z=True seed=1 lam0=0.300 lam=0.250000000000000 err=1.4e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=39
+n=96 u3z=True seed=1 lam0=0.330 lam=0.250000000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=40
+n=96 u3z=True seed=1 lam0=0.360 lam=0.250000000000000 err=5.6e-17 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=37
+== continued n=96 u3_zero=True: 16/16 pass, batch wall 9.5s
+
+n=192 u3z=True seed=0 lam0=0.200 lam=0.250000000000000 err=1.7e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=2
+n=192 u3z=True seed=0 lam0=0.220 lam=0.250000000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=1
+n=192 u3z=True seed=0 lam0=0.240 lam=0.250000000000000 err=1.4e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=1
+n=192 u3z=True seed=0 lam0=0.260 lam=0.250000000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=1
+n=192 u3z=True seed=0 lam0=0.280 lam=0.250000000000000 err=2.8e-17 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=3
+n=192 u3z=True seed=0 lam0=0.300 lam=0.250000000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=1
+n=192 u3z=True seed=0 lam0=0.330 lam=0.250000000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=1
+n=192 u3z=True seed=0 lam0=0.360 lam=0.250000000000000 err=1.4e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=2
+n=192 u3z=True seed=1 lam0=0.200 lam=0.250000000000000 err=1.7e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=2
+n=192 u3z=True seed=1 lam0=0.220 lam=0.250000000000000 err=0.0e+00 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=3
+n=192 u3z=True seed=1 lam0=0.240 lam=0.250000000000000 err=1.9e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=2
+n=192 u3z=True seed=1 lam0=0.260 lam=0.250000000000000 err=1.4e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=2
+n=192 u3z=True seed=1 lam0=0.280 lam=0.250000000000000 err=1.7e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=2
+n=192 u3z=True seed=1 lam0=0.300 lam=0.250000000000000 err=1.4e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=1
+n=192 u3z=True seed=1 lam0=0.330 lam=0.250000000000000 err=5.6e-17 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=2
+n=192 u3z=True seed=1 lam0=0.360 lam=0.250000000000000 err=1.1e-16 prof=2.0e-10 res=1.1e-11 u5=1.000000 it=3
+== continued n=192 u3_zero=True: 16/16 pass, batch wall 2.9s
+
+n=48 u3z=False seed=0 lam0=0.400 lam=0.499999999999795 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=47
+n=48 u3z=False seed=0 lam0=0.450 lam=0.499999999999795 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=48
+n=48 u3z=False seed=0 lam0=0.550 lam=0.499999999999795 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=35
+n=48 u3z=False seed=0 lam0=0.620 lam=0.499999999999795 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=42
+n=48 u3z=False seed=0 lam0=0.700 lam=0.499999999999795 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=33
+n=48 u3z=False seed=0 lam0=0.800 lam=0.250000000000007 err=2.5e-01 prof=8.0e-01 res=5.3e-10 u5=1.000001 it=31
+n=48 u3z=False seed=1 lam0=0.400 lam=0.499999999999795 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=45
+n=48 u3z=False seed=1 lam0=0.450 lam=0.499999999999795 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=47
+n=48 u3z=False seed=1 lam0=0.550 lam=0.499999999999795 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=34
+n=48 u3z=False seed=1 lam0=0.620 lam=0.499999999999795 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=32
+n=48 u3z=False seed=1 lam0=0.700 lam=0.499999999999795 err=2.0e-13 prof=1.5e-11 res=8.9e-12 u5=-3.000000 it=35
+n=48 u3z=False seed=1 lam0=0.800 lam=0.250000000000007 err=2.5e-01 prof=8.0e-01 res=5.3e-10 u5=1.000001 it=30
+== multistart n=48 u3_zero=False: 10/12 pass, batch wall 7.8s
+
+n=96 u3z=False seed=0 lam0=0.400 lam=0.500000000000000 err=0.0e+00 prof=3.8e-14 res=2.4e-15 u5=-3.000000 it=33
+n=96 u3z=False seed=0 lam0=0.450 lam=0.500000000000000 err=1.1e-16 prof=5.6e-14 res=3.3e-15 u5=-3.000000 it=34
+n=96 u3z=False seed=0 lam0=0.550 lam=0.500000000000000 err=1.1e-16 prof=4.6e-14 res=3.1e-15 u5=-3.000000 it=32
+n=96 u3z=False seed=0 lam0=0.620 lam=0.500000000000000 err=0.0e+00 prof=4.6e-14 res=2.7e-15 u5=-3.000000 it=32
+n=96 u3z=False seed=0 lam0=0.700 lam=0.500000000000000 err=5.6e-17 prof=4.7e-14 res=3.1e-15 u5=-3.000000 it=32
+n=96 u3z=False seed=0 lam0=0.800 lam=0.250000000000000 err=2.5e-01 prof=8.0e-01 res=1.1e-11 u5=1.000000 it=37
+n=96 u3z=False seed=1 lam0=0.400 lam=0.500000000000000 err=0.0e+00 prof=4.6e-14 res=3.1e-15 u5=-3.000000 it=32
+n=96 u3z=False seed=1 lam0=0.450 lam=0.500000000000000 err=1.1e-16 prof=4.6e-14 res=2.9e-15 u5=-3.000000 it=32
+n=96 u3z=False seed=1 lam0=0.550 lam=0.500000000000000 err=1.7e-16 prof=4.7e-14 res=3.6e-15 u5=-3.000000 it=34
+n=96 u3z=False seed=1 lam0=0.620 lam=0.500000000000000 err=1.1e-16 prof=4.7e-14 res=2.9e-15 u5=-3.000000 it=32
+n=96 u3z=False seed=1 lam0=0.700 lam=0.500000000000000 err=1.1e-16 prof=4.4e-14 res=2.7e-15 u5=-3.000000 it=32
+n=96 u3z=False seed=1 lam0=0.800 lam=0.250000000000000 err=2.5e-01 prof=8.0e-01 res=1.1e-11 u5=1.000000 it=34
+== continued n=96 u3_zero=False: 10/12 pass, batch wall 7.0s
+
+n=192 u3z=False seed=0 lam0=0.400 lam=0.500000000000000 err=5.6e-17 prof=3.7e-14 res=2.4e-15 u5=-3.000000 it=1
+n=192 u3z=False seed=0 lam0=0.450 lam=0.500000000000000 err=1.1e-16 prof=5.6e-14 res=3.3e-15 u5=-3.000000 it=1
+n=192 u3z=False seed=0 lam0=0.550 lam=0.500000000000000 err=0.0e+00 prof=4.5e-14 res=3.3e-15 u5=-3.000000 it=1
+n=192 u3z=False seed=0 lam0=0.620 lam=0.500000000000000 err=5.6e-17 prof=4.6e-14 res=2.7e-15 u5=-3.000000 it=1
+n=192 u3z=False seed=0 lam0=0.700 lam=0.500000000000000 err=0.0e+00 prof=4.7e-14 res=2.9e-15 u5=-3.000000 it=1
+n=192 u3z=False seed=0 lam0=0.800 lam=0.250000000000000 err=2.5e-01 prof=8.0e-01 res=1.1e-11 u5=1.000000 it=3
+n=192 u3z=False seed=1 lam0=0.400 lam=0.500000000000000 err=0.0e+00 prof=4.6e-14 res=3.1e-15 u5=-3.000000 it=1
+n=192 u3z=False seed=1 lam0=0.450 lam=0.500000000000000 err=0.0e+00 prof=4.6e-14 res=2.7e-15 u5=-3.000000 it=1
+n=192 u3z=False seed=1 lam0=0.550 lam=0.500000000000000 err=2.8e-16 prof=4.7e-14 res=2.9e-15 u5=-3.000000 it=1
+n=192 u3z=False seed=1 lam0=0.620 lam=0.500000000000000 err=1.1e-16 prof=4.6e-14 res=2.9e-15 u5=-3.000000 it=1
+n=192 u3z=False seed=1 lam0=0.700 lam=0.500000000000000 err=1.1e-16 prof=4.4e-14 res=2.7e-15 u5=-3.000000 it=1
+n=192 u3z=False seed=1 lam0=0.800 lam=0.250000000000000 err=2.5e-01 prof=8.0e-01 res=1.1e-11 u5=1.000000 it=1
+== continued n=192 u3_zero=False: 10/12 pass, batch wall 1.3s
+

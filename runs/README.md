@@ -16,3 +16,8 @@ Reproduce:
     .venv/Scripts/python runs/analytic_trial.py 48 96
     .venv/Scripts/python runs/representation_check.py
     .venv/Scripts/python tests/test_gpu_solver.py
+- `lam_scan.py` / `lam_scan.jsonl` — lam fixed on a grid, coefficients solved; the V-shape diagnostic.
+- `origin_check.py` — origin series vs finite fit and hand formulas.
+- `origin_trial.py` / `.out` — origin rows with white-noise starts (mostly fails to converge; kept as a record).
+- `origin_continuation.py` / `.out` — origin rows, decaying-noise multi-start at n = 48, continuation to 96, 192. PASS.
+- `lit_2a_notes.md` — literature notes for rung 2a from a Sonnet subagent; not verified by the builder.

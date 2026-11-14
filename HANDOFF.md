@@ -215,3 +215,77 @@ scaling conventions against lam_1 first, since that is the one value I can vouch
 1. lam-scan diagnostic (minutes).
 2. Origin Taylor rows; rerun 1a unstable; report against the pass condition.
 3. Wait for Michael's go on rung 2.
+
+
+## Builder update 2026-11-13 — rung 1 now passes in full (run on this machine, RTX 4080 SUPER)
+
+Followed the math session's order of work. Records: `runs/lam_scan.jsonl`, `runs/ledger.jsonl`
+(cases `1a-burgers-origin*`), raw output in `runs/origin_continuation.out`.
+
+### 1. lam-scan diagnostic — prediction confirmed
+lam fixed on 21 values in [0.24, 0.26], coefficients solved (old rows: collocation + sum c = 1), all 21
+in one batched solve (3.5 s per n).
+
+| n | min \|r\|_2 (at lam = 0.250) | \|r\|_2 at 0.249 / 0.251 | \|r\|_2 at 0.240 / 0.260 | slope d\|r\|/dlam |
+|---|---|---|---|---|
+| 48 | 3.0e-9 | 7.0e-8 / 7.8e-8 | 4.4e-7 / 1.2e-6 | about 7e-5 |
+| 96 | 1.1e-10 | 4.8e-9 / 5.4e-9 | 2.7e-8 / 8.9e-8 | about 5e-6 |
+
+A V centred at 0.25 whose slope drops about 14x from n = 48 to n = 96. (The V is not symmetric.)
+
+### 2. Origin Taylor rows — 1a unstable PASS, 1a stable still PASS
+Built as prescribed: `burgers.origin_series` gets the Taylor coefficients of the ansatz at y = 0 by
+truncated power-series arithmetic (closed-form Chebyshev table T_k(1+2x) = sum_j d[k,j] x^j, binomial series
+for s, polynomial products), `origin_rows` forms r3, r5, r7 from the series of the residual, weight 1.
+A test checks them against your hand formulas (agree to 1e-15 relative). The u3 = 0 row is taken from the series.
+
+Result, 16 starts (lam0 in {0.20, ..., 0.36} x 2 seeds), solved as one batch, then continued in n:
+
+| branch | n | starts passing | \|lam - ref\| (worst) | sup profile err, \|y\|<=20 | sup residual | batch wall |
+|---|---|---|---|---|---|---|
+| u3 = 0 (ref 1/4) | 48 | 16/16 | 7.4e-15 | 5.6e-9 | 5.3e-10 | 8.1 s |
+| u3 = 0 | 96 | 16/16 | 1.4e-16 | 2.0e-10 | 1.1e-11 | 9.5 s |
+| u3 = 0 | 192 | 16/16 | 1.9e-16 | 2.0e-10 | 1.1e-11 | 2.9 s |
+| lam free (ref 1/2) | 48 | 10/12 | 2.0e-13 | 1.5e-11 | 8.9e-12 | 7.8 s |
+| lam free | 96 | 10/12 | 1.7e-16 | 5.6e-14 | 3.6e-15 | 7.0 s |
+| lam free | 192 | 10/12 | 2.8e-16 | 5.6e-14 | 3.3e-15 | 1.3 s |
+
+Pass condition (|lam - 1/4| < 1e-6, no growth under 48 -> 96 -> 192): met, by nine orders of magnitude.
+u5 = 1.000000 on the 1/4 branch (exact value 1) and u5 = -3.000000 on the 1/2 branch.
+
+Things you should know before trusting this further:
+- **Initialisation matters now.** With white-noise initial coefficients (the old default) the origin rows made
+  convergence much worse: 7/16, 3/16 and 0/16 starts converged at n = 48, 96, 192 (`runs/origin_trial.out`,
+  ledger case `1a-burgers-origin-U3zero`), because the rows weigh c_k by about k^6. What works: initial noise
+  decaying like k^-3, multi-start at n = 48, then pad with zeros and polish at n = 96 and 192
+  (`runs/origin_continuation.py`). The n = 192 rows above are therefore polish steps (1-3 iterations), not
+  independent solves; the profile error does not improve from 96 to 192.
+- **The two lam-free "non-passes" are not failures.** Starts at lam0 = 0.80 converged to the lam = 1/4 branch
+  (lam = 0.25 to 1e-16, u3 = 0 automatically, residual 1e-11). It is a true solution, just not the reference
+  for that row. With origin rows the solver finds whichever branch the start is closest to in its own metric.
+- In the failed white-noise runs, unconverged starts drifted toward u5 = 0 and lam between 0.05 and 0.19,
+  i.e. toward the higher branches 1/6, 1/8, ..., which satisfy all imposed rows. None converged in 400 iterations.
+  Reported u3, u5, u7 identify the branch.
+- Not done: no analytic elimination of lam (lam stayed an unknown, as DIRECTION.md 1a requires).
+
+### 3. Batched multi-start (Michael asked for it)
+`gpu_solver/batch_lm.py`: B independent LM problems in one set of batched QR solves, per-problem damping,
+chunked Jacobians (the first version ran out of the card's 16 GB at n = 192; chunk = 64 fixed it), stall stop.
+16 starts cost about the same wall time as one.
+
+### 4. Literature for 2a (Sonnet subagent, NOT run or checked by me) — `runs/lit_2a_notes.md`
+Reported as read from arXiv:2509.14185 v1 Fig. 2f and arXiv:2201.06780: CCF stable lam_0 = 1.1807776628998
+(2201.06780: 1.18078), first unstable 0.6057337012032, second 0.4713248638620; Boussinesq stable
+1.9205599746927; Boussinesq relation lam = -3 - 2 d_y1 U1(0,0) quoted from Methods.
+Discrepancy for you: the text of 2509.14185 says lam_2 = 0.4703, its Fig. 2f says 0.4713. Unresolved.
+Not found: the sign and prefactor of the Hilbert transform in the CCF papers, and the CCF equations in
+2509.14185 (Supplementary not posted). The 2201.06780 equations were partly reconstructed from a text
+extraction that dropped Greek letters, so I will re-derive the profile equation and check it against
+lam_1 = 0.6057 before trusting any of it. The agent also offered its own origin relation for CCF
+(lam = -2 + 2U'(0)); unverified, please check.
+
+### State
+- Rung 1: 1a stable PASS, 1a unstable PASS, 1b PASS.
+- Rung 2: not started. Waiting for Michael's go.
+- Question: for CCF, is the stable profile smooth at the origin with a C^k competitor as in your Q2 picture,
+  and is lam = -2 + 2U'(0) (convention omega_t - u omega_x = u_x omega, Omega'(0) = -2) right?
