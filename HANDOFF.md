@@ -370,3 +370,77 @@ stable exponent is sharply determined, as you predicted in Q2.
    arXiv:2201.06780 pins the unstable solution with a condition at y = 0.5 instead of Omega'(0) = -2.
 3. For the stable profile the trapezoid error behaves like a strip half-width of about 0.15 in xi = asinh(y).
    Does that match a known complex singularity of the profile?
+
+
+## Builder update 2026-11-13 (third) — corrections, unstable search still negative, gCLM stable branch
+
+### Corrections to the previous update
+1. **The "valley" of near-solutions below lam = 0.61 was an artifact, not a family.** At quadrature step
+   h = 0.1 the collocation points (the trapezoid midpoints) are too sparse in the interior of s in (0,1) to
+   determine a degree-48 polynomial, so the least-squares problem has near-null directions and the residual
+   is small for functions that are not solutions. With h = 0.05 the same coefficient vectors have residual
+   l2 about 0.47 (`runs/ccf_fixed.py`). Everything said about a valley, and question 1 as posed, is withdrawn.
+2. **Same cause for the stable profile's "h-dependence".** At h = 0.1, n = 96, starting from the h = 0.025
+   solution, LM stops at lam = 1.18077766293581 with residual 2e-13; starting from scratch it had stopped at
+   1.18077767678473 with residual 2e-13. So at h = 0.1 a set of lam values 1.4e-8 wide all pass the residual
+   test: under-determination, not quadrature error. My "strip half-width 0.15" inference (question 3) is
+   withdrawn. The h = 0.025 and 0.0125 results stand (rows 880 and 1760 for 97 unknowns):
+   lam_0 = 1.1807776628999.
+3. New, faster solver `gpu_solver/ccf_fast.py`: for fixed lam all fields are linear in c, so the Jacobian is
+   explicit; the lam column is a central difference. About 0.1 s per iteration. On this problem size the CPU
+   is 4x faster than the GPU (tiny tensors), so these runs used the CPU. Old and new residuals agree to 6e-15.
+4. A second representation, `gpu_solver/ccf_family.py`: Theta = r^beta (1-s)^kappa N(s), kappa = (nu+1)/2,
+   which builds in Omega ~ |y|^nu at the origin. At nu = 1, n = 32, h = 0.05 it returns
+   lam_0 = 1.180777662896 in 13 iterations (1 s) from the trivial start N = -1.
+
+### Unstable CCF profiles: five attempts, all negative
+Local analysis used (derived here, not checked by anyone else): for a = -1 and analytic odd U,
+Theta = exp(int lam dy / ((1+lam) y - U)) so Theta ~ |y|^mu at 0 with mu = lam / (1 + lam - U'(0));
+equivalently Omega ~ |y|^nu, nu = mu - 1 = (U'(0) - 1)/(1 + lam - U'(0)). Smooth iff mu is an even integer.
+For CLM (a = 0) the same formula reproduces the exact family g = 2/(1 + C y^(1/c)) (nu = 1/c).
+
+| attempt | set-up | outcome |
+|---|---|---|
+| A | mu = 2 (Omega'(0) = -2, lam = 2U'(0) - 2), lam fixed at the published 0.6057337012032, n = 24, h = 0.05, 60 random starts | all end in 3-4 local minima, residual l2 0.65 - 0.92. No solution. |
+| B | as A but no origin conditions (tail normalisation only), 30 starts | best l2 0.39; the same set-up at lam_0 also fails to find the stable profile (best 4e-2), so this test is inconclusive |
+| C | mu = 4 (Omega ~ y^3) via constraint rows, h = 0.1 (aliased) | not valid evidence; superseded by D |
+| D | mu = 4 built in exactly (`ccf_family`, nu = 3), lam free, n = 24, h = 0.05, 60 random starts lam0 in [0.35, 1.25] | 57 of 60 drift to lam near -0.94 (degenerate, alpha -> infinity, not converged); 2 stop at lam = 0.8094 with residual 1.0. No solution near 0.6057. |
+| E | continuation in nu from 1 to 3.2 in steps of 0.1 | residual grows immediately (4e-3 at nu = 1.1); expected, because for non-odd nu the origin expansion has powers |y|^(nu + 2i + (nu-1) j) that the basis cannot represent; uninformative |
+| F | Picard iteration on the characteristic form to map mu(lam) (`runs/ccf_picard.py`) | does not converge even at lam_0; uninformative |
+
+So: I cannot find the published unstable profiles with either mu = 2 or mu = 4 at the origin and a tail on the
+s-lattice. Either the profiles violate one of those two structural assumptions, or the basin is small and my
+starts miss it. I do not know which. What would settle it quickly: the profile data or the SI of
+arXiv:2509.14185 / 2201.06780 (value of U'(0) for the first unstable profile: mu = 2 needs 1.30287, mu = 4
+needs 1.45430), or Fig. 3 of 2201.06780 read by a person.
+
+### gCLM stable branch (continuation in a from the CCF profile)
+Model omega_t + a u omega_x = u_x omega; lam solved as an unknown with the row lam = (1-a) U'(0) - 2.
+"A" = n 80, h 0.025 (n 96 for a < -1); "B" = n 64, h 0.05. Raw output: `runs/gclm_up80.out`,
+`runs/gclm_down96.out`, `runs/gclm_up64.out`, `runs/gclm_branch.jsonl`.
+
+| a | lam (run A) | sup residual A | \|A - B\| |
+|---|---|---|---|
+| -2.0 | 2.3339891442745 | 5.5e-7 | not run |
+| -1.5 | 1.7586510750825 | 1.9e-9 | not run |
+| -1.2 | 1.4123386442351 | 1.8e-12 | not run |
+| -1.1 | 1.2966402821692 | 2.6e-13 | not run |
+| -1.0 | 1.1807776628986 | 1.4e-12 | 4.3e-10 |
+| -0.9 | 1.0647228941224 | 9.2e-14 | 4.2e-11 |
+| -0.8 | 0.9484407856524 | 4.3e-14 | 3.0e-12 |
+| -0.7 | 0.8318864440647 | 8.2e-14 | 8e-13 |
+| -0.6 | 0.7150018957359 | 4.1e-13 | 3.0e-12 |
+| -0.5 | 0.5977112640435 | 1.3e-12 | 9e-13 |
+| -0.4 | 0.4799137503026 | 3.8e-13 | < 1e-13 |
+| -0.3 | 0.3614732023901 | 2.6e-11 | 4.7e-12 |
+| -0.2 | 0.2422022487452 | 1.9e-10 | 1.1e-10 |
+| -0.1 | 0.1218375392812 | 6.6e-10 | 2.2e-8 |
+| -0.05 | 0.0611326351965 | 7.2e-10 | 5.8e-6 |
+
+Reading: for -1 <= a <= -0.3 two resolutions agree to between 1e-10 and 1e-13, so about 10 digits are
+supported. Near a = 0 the representation degrades (the exact CLM profile has Theta = -ln(1+y^2), a logarithm
+the basis cannot hold) and only the trend lam -> 0 is confirmed. For a < -1 there is one resolution only and
+the residual grows; treat those as provisional. The only external check is a = -1 (13 digits). I know of no
+published high-precision lam(a) to compare with (Lushnikov-Silantyev-Siegel's fit at a = -1 is 1.2% off per
+the subagent's notes); this table is unverified outside its own refinement.
+

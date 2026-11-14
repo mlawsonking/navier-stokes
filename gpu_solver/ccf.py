@@ -109,3 +109,62 @@ def residual_vec(params, G, a=-1.0, lam_row=True):
     if lam_row:
         rows.append((lam + 2 - (1 - a) * Up0).reshape(1))
     return torch.cat(rows)
+
+
+def residual_vec_k(params, G, k=2, a=-1.0):
+    """Family with Theta ~ y^(2k) at the origin (hypothesis for the k-1 th unstable profile; k=1 is the
+    stable family with a different normalisation). Rows: collocation; Theta''(0)=0 i.e. Q(1)=0 (k=2);
+    tail normalisation M(0) = -1; origin exponent row lam = 2k (1 + lam + a U'(0)) ... derived for a=-1:
+    -lam Theta + ((1+lam) y - U) Theta' = 0 with Theta ~ y^(2k) gives lam = 2k (1 + lam - U'(0))."""
+    assert a == -1.0 and k in (1, 2)
+    lam, c = params[0], params[1:]
+    alpha = 1.0 / (1.0 + lam); beta = (1 - alpha) / 2
+    _, Om, Omy = fields_local(params, G.y)
+    U, Up, Up0 = velocity(params, G)
+    y2 = G.y * G.y
+    R = (Om + ((1 + lam) * G.y - U) * Omy - Om * Up) / (G.y * (1 + y2) ** (beta - 1) * (y2 / (1 + y2)) ** (k - 1))
+    one = torch.ones(1, dtype=Om.dtype, device=Om.device)
+    sgn = torch.tensor([(-1.0) ** j for j in range(c.shape[0])], dtype=c.dtype, device=c.device)
+    rows = [R, ((c * sgn).sum() + 1.0).reshape(1), (lam - 2 * k * (1 + lam - Up0)).reshape(1)]
+    if k == 2:
+        rows.append(_MQ(c, one, alpha, beta)[1])
+    return torch.cat(rows)
+
+
+# ---- family Omega ~ y^3 at the origin (Theta''(0) = 0 built in exactly) -----------------------
+def lift_matrix(n, device="cuda"):
+    """A [(n+2) x n]: Chebyshev coefficients of (1-s)^2 * sum_k c_k T_k(2s-1).
+    (1-s)^2 = 3/8 - T1/2 + T2/8 in x = 2s-1; T_j T_k = (T_(j+k) + T_|j-k|)/2."""
+    A = torch.zeros(n + 2, n, dtype=DT, device=device)
+    for k in range(n):
+        A[k, k] += 3 / 8
+        for j, w in ((1, -0.5), (2, 0.125)):
+            A[k + j, k] += w / 2
+            A[abs(k - j), k] += w / 2
+    return A
+
+
+def params_k2(q, A):
+    """q = [lam, C0, c_N...] -> [lam, c_M...] with M = C0 (1 + (2 beta/alpha)(s-1)) + (1-s)^2 N(s),
+    which makes Q(1) = 0, i.e. Omega'(0) = 0, identically."""
+    lam, C0, cN = q[0], q[1], q[2:]
+    alpha = 1.0 / (1.0 + lam); beta = (1 - alpha) / 2
+    cM = A @ cN
+    e0 = torch.zeros_like(cM); e0[0] = 1.0
+    e1 = torch.zeros_like(cM); e1[1] = 1.0
+    cM = cM + C0 * ((1 - beta / alpha) * e0 + (beta / alpha) * e1)
+    return torch.cat([lam.reshape(1), cM])
+
+
+def residual_vec_k2(q, G, A):
+    """Rows: collocation (normalised by the y^3 behaviour), tail normalisation M(0) = -1,
+    origin exponent row lam = 4 (1 + lam - U'(0))."""
+    p = params_k2(q, A)
+    lam, c = p[0], p[1:]
+    alpha = 1.0 / (1.0 + lam); beta = (1 - alpha) / 2
+    _, Om, Omy = fields_local(p, G.y)
+    U, Up, Up0 = velocity(p, G)
+    y2 = G.y * G.y
+    R = (Om + ((1 + lam) * G.y - U) * Omy - Om * Up) / (G.y * (1 + y2) ** (beta - 1) * (y2 / (1 + y2)))
+    sgn = torch.tensor([(-1.0) ** j for j in range(c.shape[0])], dtype=c.dtype, device=c.device)
+    return torch.cat([R, ((c * sgn).sum() + 1.0).reshape(1), (lam - 4 * (1 + lam - Up0)).reshape(1)])

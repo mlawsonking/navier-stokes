@@ -26,3 +26,6 @@ Reproduce:
 - `ccf_first.py`, `ccf_continue.py` — CCF multi-start and continuation (env H, L, LC, NGL set the quadrature).
 - `ccf_scan.py`, `ccf_scan2.py`, `ccf_scan.jsonl`, `ccf_scan_*.out` — fixed-lam scans (stable V; unstable valley).
 - `*.pt` — saved parameter vectors [lam, c_0..c_(n-1)] (torch.load).
+- `ccf_fixed.py`, `ccf_multistart.py`, `ccf_k2.py`, `ccf_k2_scan.py`, `ccf_nu_continuation.py`, `ccf_nu_multistart.py`,
+  `ccf_picard.py` — the unstable-profile attempts A-F in HANDOFF (all negative). `ccf_fast_check.py` — fast vs old solver.
+- `gclm_branch.py`, `gclm_branch.jsonl`, `gclm_*.out` — stable branch of the gCLM family continued in a.
