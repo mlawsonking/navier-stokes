@@ -27,27 +27,48 @@ class EGrid:
     rows keep up with a basis that is concentrated there. cluster = None is the plain exponential grid."""
     def __init__(self, h=0.0125, L=40.0, Lc0=12.0, Lc=22.0, n_gl=128, device="cuda", cluster=None):
         self.h = h
-        if cluster is None:
-            xi = lambda t: t; dxi = lambda t: torch.ones_like(t)
-        elif cluster[0] == "box":
-            # flat-top: density D for |xi - xp| < c (smooth edges), xi(tau) = tau - A B(tau - xp),
-            # B' = [atan((u+b)/w) - atan((u-b)/w)]/pi, b = c D, w = b/5. Analytic; singularities at +-b +- i w.
-            _, xp, c, D = cluster
-            b = c * D; w = b / 5; A = (1 - 1 / D) / (2 * math.atan(5.0) / math.pi)
-            Fp = lambda u: u * torch.atan(u / w) - (w / 2) * torch.log(w * w + u * u)
-            xi = lambda t: t - A * (Fp(t - xp + b) - Fp(t - xp - b)) / math.pi
-            dxi = lambda t: 1 - A * (torch.atan((t - xp + b) / w) - torch.atan((t - xp - b) / w)) / math.pi
-            L, Lc0, Lc = L + A * b, Lc0 + A * b, Lc + A * b      # the map compresses the far ranges by A b
+        if cluster is not None and cluster[0] == "sinh":
+            # Row density that follows the sinh-mapped basis: tau(xi) = xi + D e asinh((xi - xp)/e), so
+            # d tau/d xi = 1 + D e / sqrt(e^2 + (xi - xp)^2): D+1 times denser at the peak, falling off like the
+            # basis density does. Inverted by Newton (monotone). Sources tau_a + j h, collocation at half steps.
+            _, xp, e, D = cluster
+            tau_of = lambda x: x + D * e * torch.asinh((x - xp) / e)
+            T = lambda v: tau_of(torch.tensor(v, dtype=DT, device=device)).item()
+            ta = T(-L); nJ = int(round((T(L) - ta) / h))
+            i0 = int(math.ceil((T(-Lc0) - ta) / h - 0.5)); i1 = int(math.floor((T(Lc) - ta) / h - 0.5))
+            def inv(tau):
+                x = torch.where(tau < T(xp), tau - T(xp) + xp, tau - T(xp) + xp)
+                x = xp + e * torch.sinh(((tau - T(xp)) / (D * e + 1e-300)).clamp(-30, 30)) if D > 0 else x
+                x = x.clamp(-L - 1, L + 1)
+                for _ in range(80):
+                    x = x - (tau_of(x) - tau) / (1 + D * e / torch.sqrt(e * e + (x - xp) ** 2))
+                return x
+            xs = inv(ta + h * torch.arange(nJ + 1, dtype=DT, device=device))
+            xc = inv(ta + h * (torch.arange(i0, i1 + 1, dtype=DT, device=device) + 0.5))
+            self.ys = torch.exp(xs); self.w = h * self.ys / (1 + D * e / torch.sqrt(e * e + (xs - xp) ** 2))
+            self.y = torch.exp(xc)
         else:
-            xp, w, A = cluster
-            xi = lambda t: t - A * torch.atan((t - xp) / w)
-            dxi = lambda t: 1 - (A / w) / (1 + ((t - xp) / w) ** 2)
-        J = int(round(L / h))
-        tau = h * torch.arange(-J, J + 1, dtype=DT, device=device)
-        self.ys = torch.exp(xi(tau))
-        self.w = h * dxi(tau) * self.ys
-        i = torch.arange(-int(round(Lc0 / h)), int(round(Lc / h)), dtype=DT, device=device)
-        self.y = torch.exp(xi(h * (i + 0.5)))
+            if cluster is None:
+                xi = lambda t: t; dxi = lambda t: torch.ones_like(t)
+            elif cluster[0] == "box":
+                # flat-top: density D for |xi - xp| < c (smooth edges), xi(tau) = tau - A B(tau - xp),
+                # B' = [atan((u+b)/w) - atan((u-b)/w)]/pi, b = c D, w = b/5. Analytic; singularities at +-b +- i w.
+                _, xp, c, D = cluster
+                b = c * D; w = b / 5; A = (1 - 1 / D) / (2 * math.atan(5.0) / math.pi)
+                Fp = lambda u: u * torch.atan(u / w) - (w / 2) * torch.log(w * w + u * u)
+                xi = lambda t: t - A * (Fp(t - xp + b) - Fp(t - xp - b)) / math.pi
+                dxi = lambda t: 1 - A * (torch.atan((t - xp + b) / w) - torch.atan((t - xp - b) / w)) / math.pi
+                L, Lc0, Lc = L + A * b, Lc0 + A * b, Lc + A * b      # the map compresses the far ranges by A b
+            else:
+                xp, w, A = cluster
+                xi = lambda t: t - A * torch.atan((t - xp) / w)
+                dxi = lambda t: 1 - (A / w) / (1 + ((t - xp) / w) ** 2)
+            J = int(round(L / h))
+            tau = h * torch.arange(-J, J + 1, dtype=DT, device=device)
+            self.ys = torch.exp(xi(tau))
+            self.w = h * dxi(tau) * self.ys
+            i = torch.arange(-int(round(Lc0 / h)), int(round(Lc / h)), dtype=DT, device=device)
+            self.y = torch.exp(xi(h * (i + 0.5)))
         self.K = self.w[None, :] / (self.y[:, None] ** 2 - self.ys[None, :] ** 2)
         self.Y = self.ys[-1]
         g, gw = np.polynomial.legendre.leggauss(n_gl)
@@ -239,3 +260,14 @@ def tsvd_gn(resjac, resid, p0, idx, max_iter=25, rc=1e-9, tol=1e-14, verbose=Fal
 def gn(p0, G, shape, free=(False, True), **kw):
     idx = torch.tensor([k for k in (0, 1) if free[k]] + list(range(2, p0.numel())), device=p0.device)
     return tsvd_gn(lambda p: res_jac(p, G, shape, free), lambda p: residual(p, G, shape), p0, idx, **kw)
+
+
+def peak_grid(lam, ypk, mp, n, h=0.0125, R=6.0, device="cuda", shift=0.0, widen=1.0, **kw):
+    """EGrid whose row density follows a sinh-mapped basis (map mp = (x0, eps) in x = 2s-1, n functions) centred
+    on a peak at y = ypk, with at least R rows per basis function near the peak."""
+    al = 1.0 / (1.0 + float(lam)); x0, eps = mp
+    s = (1 + ypk * ypk) ** (-al / 2); dsdxi = al * s * ypk * ypk / (1 + ypk * ypk)
+    e = eps / (2 * dsdxi)                                    # map width in xi = log y
+    a12 = math.asinh((1 - x0) / eps) + math.asinh((1 + x0) / eps)
+    D = R * h * n * 2 / (a12 * math.pi * e)
+    return EGrid(h=h, device=device, cluster=("sinh", math.log(ypk) + shift * e, widen * e, D / widen), **kw)

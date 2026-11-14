@@ -36,3 +36,20 @@ Reproduce:
 - `gclm_exact_check.py`, `gclm_from_exact.py` — exact a = 1/2 solution check; continuation from it (stalls for lam < 0).
 - `gclm_u1_branch.py`, `gclm_u1_verify.py`, `gclm_u1_branch*.{pt,jsonl}`, `gclm_u1_*.out` — first unstable branch in a, and its second-resolution check.
 - `lit_gclm_branches.md` — prior-art notes on a-dependent branches (Sonnet subagent; not verified by the builder).
+
+## Added 2026-11-14 (fourth update onward): see STATE.md for the current picture
+- `sing_check.py`: ccf_sing reproduces lam_1 at mu = 2.
+- `sing_track.py` (first tracker, LM, superseded) and `sing_track2.py` (peak-aligned Lagrange predictor,
+  truncated-SVD Gauss-Newton, `peak_grid`, on/off-grid acceptance). Data: `sing_track.jsonl`
+  (cases `sing-track-*` and `sing-track2-*`), `sing_track2_v*.pt` (lists of dict(lam, p, map, ypk, njJ)).
+  Rows of `sing-track-t2..t4` below lam = 0.515 were fitted on un-clustered grids: superseded by t5/t6.
+- `sing_smooth.py` (mu = 2 fixed, lam free, singular blocks kept), `sing_to_smooth.py` (smooth basis only):
+  `ccf_u2_a.pt`, `ccf_u2_smooth{448,640,640c,640h,800}.pt` are the lam_2 table.
+- `sing_offgrid_check.py`, `quad_sharp_pair_check.py`, `quad_sinh_grid_check.py`: verification tools.
+- `gclm_u1_branch.py`: ccf_fast version of the a-branch (clustering, off-grid column, GN).
+  Cases in `gclm_u1_branch.jsonl`: trust `upe256`, `upf256`, `upg256`, `uph256`, `upl256` (they carry
+  `res_offgrid`); `upc288`, `upw288`, `upd256` are WITHDRAWN (cluster off the peak).
+- `gclm_log_check.py`, `gclm_log_branch.py`: log-regular solver and the branch through lam_1 = 0
+  (cases `gclm-u1-log-w*`; `gclm_log_branch_w*.pt` are lists of dict(a, p = [lam, q0, c], map, ypk)).
+- `diag_u1.py`, `diag_u1b.py`, `_*.py`: one-off diagnostics, kept as a record of how each trap was found.
+- `_*.log`: raw tracker logs (not committed).
