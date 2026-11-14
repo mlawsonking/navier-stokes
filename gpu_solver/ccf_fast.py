@@ -10,12 +10,33 @@ from torch.func import jvp
 from .ccf import cheb3, Grid, DT
 
 
+MAP = None   # None: plain Chebyshev in x = 2s-1.  (x0, eps): Tee-Trefethen sinh map concentrating points at x0,
+             # for a profile with complex singularities near x0 +/- i eps. t(x) is analytic on [-1,1], so the
+             # basis T_k(t(2s-1)) is still analytic in s at both ends (origin and far field unchanged).
+
+
+def basis3(s, n):
+    """phi_k(s), d phi_k/ds, d^2 phi_k/ds^2 for k < n."""
+    x = 2 * s - 1
+    if MAP is None:
+        T, d1, d2 = cheb3(x, n)
+        return T, 2 * d1, 4 * d2
+    x0, eps = MAP
+    a1, a2 = math.asinh((1 - x0) / eps), math.asinh((1 + x0) / eps)
+    u = x - x0
+    t = 2 * (torch.asinh(u / eps) + a2) / (a1 + a2) - 1
+    rt = torch.sqrt(eps * eps + u * u)
+    ts = 2 * (2 / (a1 + a2)) / rt                       # dt/ds
+    tss = 4 * (-(2 / (a1 + a2)) * u / rt ** 3)          # d2t/ds2
+    T, d1, d2 = cheb3(t, n)
+    return T, d1 * ts[:, None], d2 * (ts * ts)[:, None] + d1 * tss[:, None]
+
+
 def _basis(lam, y, n):
     alpha = 1.0 / (1.0 + lam); beta = (1 - alpha) / 2
     r = 1 + y * y
     s = r ** (-alpha / 2)
-    T, d1, d2 = cheb3(2 * s - 1, n)
-    M1, M2 = 2 * d1, 4 * d2
+    T, M1, M2 = basis3(s, n)
     Q = 2 * beta * T - alpha * s[:, None] * M1
     Q1 = (2 * beta - alpha) * M1 - alpha * s[:, None] * M2
     BTh = (r ** beta)[:, None] * T
@@ -29,9 +50,9 @@ def operators(lam, G, n):
     _, BOm, BOmy, _, _, _ = _basis(lam, G.y, n)
     sY = (1 + G.Y * G.Y) ** (-alpha / 2)
     sg = sY * G.g
-    Tg, d1g, _ = cheb3(2 * sg - 1, n)
+    Tg, M1g, _ = basis3(sg, n)
     tM = sY * (G.gw @ Tg) / alpha
-    tQ = sY * (G.gw @ (2 * beta * Tg - alpha * sg[:, None] * 2 * d1g)) / alpha
+    tQ = sY * (G.gw @ (2 * beta * Tg - alpha * sg[:, None] * M1g)) / alpha
     AU = (2 * G.y / math.pi)[:, None] * (G.K @ BTh_s - tM)
     AUp = (2 / math.pi) * (G.K @ (BOm_s * G.ys[:, None]) - tQ)
     ratio = torch.cat([Q_s[:1], BOm_s[1:] / G.ys[1:, None]])
@@ -53,7 +74,7 @@ def residual(lam, c, G, a=-1.0, with_jac=False):
     if MODE['norm'] == 'origin':
         nvec, nval = q1, MODE.get('d', 2.0)
     else:                                             # tail amplitude: M(0) = -1
-        nvec = torch.tensor([(-1.0) ** j for j in range(n)], dtype=DT, device=c.device); nval = 1.0
+        nvec = basis3(torch.zeros(1, dtype=DT, device=c.device), n)[0][0]; nval = 1.0
     rows = [R, (nvec @ c + nval).reshape(1)]
     if MODE['origin_row']:
         rows.append((lam + 2 - (1 - a) * (up0 @ c)).reshape(1))

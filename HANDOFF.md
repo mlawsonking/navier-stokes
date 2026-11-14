@@ -488,3 +488,39 @@ C and D (mu = 4) are wrong hypotheses.
    digits and compare with 0.6057337012032.
 2. Second unstable profile: the two published values differ at the 7th digit (0.4713248638620 vs 0.47132422).
 3. Search for a third.
+
+
+## Builder update 2026-11-14 — lam_1 to 13 digits with a peak-adapted map; lam_2 in progress
+
+### The fix: Tee-Trefethen sinh map in the Chebyshev variable (`ccf_fast.MAP = (x0, eps)`)
+Basis T_k(t(x)), x = 2s-1, t(x) = 2 (asinh((x-x0)/eps) + a2)/(a1+a2) - 1, a1 = asinh((1-x0)/eps),
+a2 = asinh((1+x0)/eps). t is analytic on [-1,1], so the origin and far-field structure of the ansatz are
+unchanged; resolution is concentrated at x0, where the profile has complex singularities at distance
+about eps. Solutions are carried between maps by Chebyshev interpolation of M(s) (`runs/ccf_remap.py`).
+
+### First unstable CCF profile — 13 digits
+Normalisation Omega'(0) = -0.1. Peak |Omega| = 1.58997 at y = 3.7542. U'(0) = 1.302866850602.
+
+| n | h (rows) | map (x0, eps) | lam_1 | sup residual | last coefficients |
+|---|---|---|---|---|---|
+| 96 | 0.025 (880) | (-0.14, 0.1) | 0.60573370120172 | 1.8e-11 | 3.7e-14 |
+| 128 | 0.025 (880) | (-0.14, 0.1) | 0.60573370253850 | 2.3e-12 | 2.7e-13 (too few rows for n: off by 1.3e-9) |
+| 128 | 0.0125 (1760) | (-0.14, 0.1) | 0.60573370120409 | 2.9e-12 | 2.0e-15 |
+| 160 | 0.0125 | (-0.14, 0.1) | 0.60573370120323 | 6.9e-13 | 2.8e-16 |
+| 128 | 0.0125 | (-0.10, 0.08) | 0.60573370120275 | 4.2e-12 | 3.1e-15 |
+| 128 | 0.0125 | (-0.14, 0.05) | 0.60573370120274 | 5.6e-12 | 7.1e-15 |
+| 128 | 0.0125 | (-0.18, 0.13) | 0.60573370120530 | 6.5e-11 | 1.0e-14 |
+
+lam_1 = 0.605733701203 +/- 2e-12 (spread of the well-resolved runs); published 0.6057337012032.
+Each solve takes 3-6 s. The plain-basis values in the previous update (0.6057347) were under-resolved,
+as suspected; they are superseded.
+
+### Second unstable profile — in progress, not converged
+Reached from the first profile by fixing lam near the published value, then freeing it. Fig. 1 and Fig. 3 of
+arXiv:2511.22819 (viewed in the browser) show the second profile has the same shape with a peak of about 8.5,
+and that for each lam below lam_1 there is a solution non-smooth at the origin whose peak grows as lam falls.
+Current state (n = 192, h = 0.0125, map (-0.097, 0.03)): with lam fixed at 0.4713248 the residual fell from
+3.4 to 3.0e-5 in 500 iterations; with lam then freed it moved to 0.47132423 (residual 2.3e-5, stopped at the
+150-iteration cap, coefficients flat near 3e-5, peak 5.7: under-resolved). This is NOT a result. It is noted
+only because the free solve moved away from 0.4713248638620 (2509.14185) toward 0.47132422 (2511.22819).
+A run with a sharper map and four times the rows is in progress.

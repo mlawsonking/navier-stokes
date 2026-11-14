@@ -2,7 +2,9 @@
 import sys, time, torch
 from gpu_solver import ccf as C, ccf_fast as F
 inp, outp, n, h, d, mi, free = sys.argv[1], sys.argv[2], int(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5]), int(sys.argv[6]), sys.argv[7] == "1"
-F.MODE.update(norm='origin', origin_row=True, d=d)
+F.MODE.update(norm="origin", origin_row=True, d=d)
+import os as _os
+if _os.environ.get("MAPX0"): F.MAP = (float(_os.environ["MAPX0"]), float(_os.environ["MAPEPS"]))
 import os; DEV = os.environ.get("DEV", "cpu"); G = C.Grid(h=h, L=40.0, Lc=22.0, device=DEV, n_gl=int(os.environ.get("NGL", 64)))
 g = torch.load(inp).to(DEV).reshape(-1)
 p = torch.zeros(n + 1, dtype=C.DT, device=DEV); m = min(n + 1, g.numel()); p[:m] = g[:m]
