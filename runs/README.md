@@ -31,3 +31,8 @@ Reproduce:
 - `gclm_branch.py`, `gclm_branch.jsonl`, `gclm_*.out` — stable branch of the gCLM family continued in a.
 - `ccf_unstable1.py`, `ccf_u_refine.py`, `ccf_u1_*.pt` — first unstable CCF profile (lam_1 = 0.605735 at n = 192, 288).
   `ccf_scale_test.py` — a representation test that turned out unreliable (ill-conditioned fit); ignore.
+- `ccf_mapped.py`, `ccf_remap.py` — sinh-mapped basis solves and transfer between maps (lam_1 to 13 digits).
+- `ccf_family_track.py`, `ccf_family_track*.{pt,out,jsonl}` — lam-family track without the origin relation: NOT the true family (discarded).
+- `gclm_exact_check.py`, `gclm_from_exact.py` — exact a = 1/2 solution check; continuation from it (stalls for lam < 0).
+- `gclm_u1_branch.py`, `gclm_u1_verify.py`, `gclm_u1_branch*.{pt,jsonl}`, `gclm_u1_*.out` — first unstable branch in a, and its second-resolution check.
+- `lit_gclm_branches.md` — prior-art notes on a-dependent branches (Sonnet subagent; not verified by the builder).

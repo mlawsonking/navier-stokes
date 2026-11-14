@@ -1,0 +1,21 @@
+a -1.0000 lam 0.605733701203 sup 2.1e-13 its 12 peak 1.5900@3.754 fwhm_x 0.3007 c_mid 4e-13 c_last 2e-16 t=16s
+a -1.0200 lam 0.626525197107 sup 7.4e-14 its 56 peak 1.5543@3.743 fwhm_x 0.3073 c_mid 1e-13 c_last 7e-17 t=79s
+a -1.0400 lam 0.647318949109 sup 2.4e-14 its 17 peak 1.5201@3.731 fwhm_x 0.3139 c_mid 3e-14 c_last 1e-17 t=99s
+a -1.0600 lam 0.668114940059 sup 5.9e-14 its 17 peak 1.4874@3.719 fwhm_x 0.3206 c_mid 1e-13 c_last 4e-17 t=120s
+a -1.0800 lam 0.688913153420 sup 6.9e-14 its 20 peak 1.4561@3.707 fwhm_x 0.3271 c_mid 2e-13 c_last 5e-17 t=145s
+a -1.1000 lam 0.709713573142 sup 7.4e-14 its 22 peak 1.4261@3.694 fwhm_x 0.3337 c_mid 2e-13 c_last 4e-17 t=172s
+a -1.1200 lam 0.730516183559 sup 7.7e-14 its 21 peak 1.3973@3.680 fwhm_x 0.3402 c_mid 2e-13 c_last 3e-17 t=197s
+a -1.1400 lam 0.751320969303 sup 5.8e-14 its 20 peak 1.3696@3.667 fwhm_x 0.3467 c_mid 2e-13 c_last 2e-17 t=228s
+a -1.1600 lam 0.772127915232 sup 6.0e-14 its 22 peak 1.3430@3.653 fwhm_x 0.3531 c_mid 2e-13 c_last 2e-17 t=255s
+a -1.1800 lam 0.792937006370 sup 5.2e-14 its 22 peak 1.3174@3.639 fwhm_x 0.3595 c_mid 2e-13 c_last 2e-17 t=282s
+a -1.2000 lam 0.813748227860 sup 4.8e-14 its 22 peak 1.2928@3.625 fwhm_x 0.3659 c_mid 1e-13 c_last 1e-17 t=310s
+a -1.2200 lam 0.834561564923 sup 6.6e-14 its 25 peak 1.2690@3.610 fwhm_x 0.3723 c_mid 1e-13 c_last 1e-17 t=340s
+a -1.2400 lam 0.855377002823 sup 7.7e-14 its 21 peak 1.2462@3.596 fwhm_x 0.3786 c_mid 8e-14 c_last 8e-18 t=366s
+a -1.2600 lam 0.876194526848 sup 9.4e-14 its 24 peak 1.2241@3.581 fwhm_x 0.3848 c_mid 7e-14 c_last 6e-18 t=395s
+a -1.2800 lam 0.897014122282 sup 1.1e-13 its 25 peak 1.2028@3.566 fwhm_x 0.3911 c_mid 7e-14 c_last 7e-18 t=425s
+a -1.3000 lam 0.917835774394 sup 1.5e-13 its 26 peak 1.1822@3.551 fwhm_x 0.3972 c_mid 6e-14 c_last 7e-18 t=457s
+a -1.3200 lam 0.938659468425 sup 2.0e-13 its 27 peak 1.1623@3.536 fwhm_x 0.4034 c_mid 6e-14 c_last 7e-18 t=491s
+a -1.3400 lam 0.959485189578 sup 3.6e-13 its 42 peak 1.1431@3.521 fwhm_x 0.4095 c_mid 5e-14 c_last 7e-18 t=541s
+a -1.3600 lam 0.980312923015 sup 7.9e-13 its 66 peak 1.1245@3.505 fwhm_x 0.4155 c_mid 4e-14 c_last 1e-17 t=620s
+a -1.3800 lam 1.001005391326 sup 2.9e-05 its 80 peak 1.1070@3.492 fwhm_x 0.4211 c_mid 2e-06 c_last 4e-09 t=711s
+stopping: not converged

@@ -70,6 +70,23 @@ def test_origin_series_matches_hand_formulas():
     assert abs(u3 - (1 - p[1:].sum()) / (2 * (1 + lam))) < 1e-13
 
 
+def test_gclm_exact_solution_a_half():
+    """a = 1/2: lam = -2/3, Omega = -(16/3) y/(1+y^2)^2, U = (8/3) y/(1+y^2) is an exact profile (hand-verified).
+    In the basis it is M = 8/3. The discrete residual, U and U' must vanish/match to roundoff."""
+    import torch
+    from gpu_solver import ccf as C, ccf_fast as F
+    F.MAP = None; F.MODE.update(norm="origin", origin_row=True, d=16 / 3, ymin=0.0)
+    G = C.Grid(h=0.025, L=40.0, Lc=14.0, device="cpu")
+    p = torch.zeros(9, dtype=C.DT); p[0] = -2 / 3; p[1] = 8 / 3
+    r = F.residual(p[0], p[1:], G, 0.5)
+    ops = F.operators(p[0], G, 8)
+    y = G.y
+    assert r.abs().max() < 1e-11
+    assert (ops[3] @ p[1:] - (8 / 3) * (1 - y * y) / (1 + y * y) ** 2).abs().max() < 1e-12
+    assert abs((ops[4] @ p[1:]).item() - 8 / 3) < 1e-12
+    F.MODE.update(d=2.0)
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

@@ -551,3 +551,71 @@ Started (`runs/gclm_u1_branch.py`): smooth profiles, lam free, origin row, map f
 First look (n = 128, h = 0.025): a = -0.96 gives lam_1 = 0.56416 (residual 1e-8), a = -0.92 gives 0.5229
 (residual 3e-6). The branch moves smoothly with a; a higher-resolution run is in progress. I know of no
 published values for this branch away from a = -1 (not checked in the literature).
+
+
+## Builder update 2026-11-14 (third) — exact check of the general-a solver; first unstable branch lam_1(a)
+
+### Exact solution at a = 1/2 (hand-derived, now a test)
+G = U' - i Omega is the boundary value of a function analytic in the upper half plane. Taking
+G = -(8/3)/(y+i)^2 gives Omega = -(16/3) y/(1+y^2)^2, U = (8/3) y/(1+y^2), and substituting into
+Omega + ((1+lam) y + a U) Omega' - Omega U' = 0 with a = 1/2, lam = -2/3 gives identically zero
+(the coefficient of each power of y cancels when kappa = 8/3). It also satisfies lam = (1-a)U'(0) - 2.
+In the basis it is M = 8/3 (alpha = 3, beta = -1). Discrete residual at the exact solution: 1.5e-13; U, U'
+errors 2e-14. Started from a 2e-3 perturbation with lam unknown, LM returns lam = -0.666666666666663.
+(From a 2e-2 perturbation it fails: the basin is small. For lam < 0 the basis is also poor away from this
+point, because the tail then has a relative y^-2 term, s^(2/alpha), at low order: continuation to a = 0.475
+stalls at residual 7e-4. So the solver is validated for general a, but usable only for lam > 0, i.e. a < 0.)
+This matches the known value alpha = 1/3 at a = 1/2 in Lushnikov-Silantyev-Siegel (LSS, arXiv:2010.01201).
+
+### Stable branch vs LSS Table 1 (read in the browser from ar5iv)
+LSS columns: alpha_e (eigenvalue problem; "3-4 digits for a < 0.3"), alpha and alpha_2 (time-dependent fits,
+"3-4 digits"). 1 + lam from my table:
+
+| a | mine | LSS alpha_e | LSS alpha | LSS alpha_2 |
+|---|---|---|---|---|
+| -1 | 2.1807776629 | - | 2.208 | 2.206 |
+| -0.5 | 1.5977112640 | - | 1.603747 | 1.600222 |
+| -0.25 | 1.3019558323 | 1.296593455 | 1.303708 | 1.302424 |
+| -0.2 | 1.2422022487 | 1.239824952 | 1.243558 | 1.242436 |
+| -0.1 | 1.1218375393 | 1.121312899 | 1.122630 | 1.122093 |
+| -0.05 | 1.0611326352 | 1.061051829 | 1.061617 | 1.061334 |
+
+Mine lies between alpha_e and alpha_2 at every a where both exist, and within LSS's stated accuracy. No
+conflict. (My digits near a = 0 are fewer than shown: see the earlier table's |A - B| column.)
+
+### First unstable branch lam_1(a) — new as far as the literature check found
+Smooth profiles, lam unknown, origin row, normalisation Omega'(0) = -0.1, sinh map following the peak,
+secant predictor in a (`runs/gclm_u1_branch.py`). "A": n = 192, h = 0.0125 (1760 rows). "B": n = 256,
+h = 0.00625 (3520 rows), re-solved from A (`runs/gclm_u1_verify.py`). Residuals of B are 2e-13 to 3e-11.
+
+| a | lam_1 (A) | \|A - B\| | peak \|Omega\| |
+|---|---|---|---|
+| -1.36 | 0.9803129230147 | 5.7e-13 | 1.1245 |
+| -1.30 | 0.9178357743941 | 1.0e-13 | 1.1822 |
+| -1.20 | 0.8137482278605 | 2.1e-14 | 1.2928 |
+| -1.10 | 0.7097135731416 | 2.7e-14 | 1.4261 |
+| -1.00 | 0.6057337012032 | 2.3e-14 | 1.5900 |
+| -0.90 | 0.5018107274766 | 4.4e-13 | 1.7964 |
+| -0.80 | 0.3979474420328 | 4.8e-11 | 2.0644 |
+| -0.74 | 0.3356598768471 | 4.1e-9 | 2.2671 |
+| -0.70 | 0.2941484615714 | 6.4e-8 | 2.4260 |
+
+Steps of 0.02 in a are in `runs/gclm_u1_branch.jsonl` and the `.out` files.
+- External check: only a = -1 (13 digits against arXiv:2509.14185). Everything else rests on the two
+  resolutions and on the solver's exact check at a = 1/2.
+- The branch is close to linear: slope d lam_1/da about -1.040, which extrapolates to lam_1 = 0 near
+  a = -0.42. The peak grows as a rises. Not computed beyond a = -0.70: accuracy drops (8 digits at -0.74,
+  7 at -0.70) and LM slows; at a = -0.64 the run did not converge (residual 3e-6).
+- Downward the run stops at a = -1.38, where lam_1 passes through 1. That is a degeneracy of the basis
+  (at lam = 1, M = s is a constant Theta, a null direction), not a property of the branch.
+- Prior art (Sonnet subagent, `runs/lit_gclm_branches.md`, not verified by me): no unstable branch for
+  a != -1 found in arXiv:2201.06780, 2509.14185, 2511.22819, 2610.30492; arXiv:2603.25104 states the
+  unstable profiles are known only at a = -1 and gives exact non-smooth profiles with lam = -a for a < 0
+  (slope -1, close to the -1.04 found here; worth your attention).
+
+### Questions for the math session
+1. Is lam_1(a) expected to end at lam = 0, and at which a? At a = 0 (CLM) the exact family
+   g = 2/(1 + C y^(1/c)) has no second smooth member, so the branch must end before a = 0.
+2. The exact non-smooth profiles lam = -a of arXiv:2603.25104: are they the limit of this branch in some
+   sense (the peak sharpening into their singularity)? lam_1(a) + a is 0.39 at a = -1 and 0.40 at a = -0.7.
+3. lam_2: I need the correct family ansatz (see the previous update, item 3) or a better idea for a start.

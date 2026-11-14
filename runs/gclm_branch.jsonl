@@ -71,3 +71,5 @@
 {"case": "gclm-stable-branch-up64", "a": -0.15, "n_basis": 64, "quad_h": 0.05, "lam": 0.18217698483781977, "res_sup": 9.317215903715563e-10, "iters": 22, "c_tail": 5.031616028369926e-10}
 {"case": "gclm-stable-branch-up64", "a": -0.1, "n_basis": 64, "quad_h": 0.05, "lam": 0.1218375170092835, "res_sup": 1.4086886042882687e-09, "iters": 50, "c_tail": 4.1707589558991244e-09}
 {"case": "gclm-stable-branch-up64", "a": -0.05, "n_basis": 64, "quad_h": 0.05, "lam": 0.06112686336463945, "res_sup": 5.016705985113415e-09, "iters": 200, "c_tail": 1.074475401743688e-07}
+{"case": "gclm-stable-from-exact", "a": 0.5, "n_basis": 48, "quad_h": 0.025, "lam": -0.6666666666666606, "res_sup": 5.630067257421968e-14, "iters": 5}
+{"case": "gclm-stable-from-exact", "a": 0.475, "n_basis": 48, "quad_h": 0.025, "lam": -0.6284940537946643, "res_sup": 0.0007201678087421449, "iters": 11}

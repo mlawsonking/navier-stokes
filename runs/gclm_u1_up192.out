@@ -1,0 +1,4 @@
+a -1.0000 lam 0.605733701203 sup 2.1e-13 its 12 peak 1.5900@3.754 fwhm_x 0.3007 c_mid 4e-13 c_last 2e-16 t=16s
+a -0.9500 lam 0.553764951757 sup 1.0e-12 its 78 peak 1.6869@3.780 fwhm_x 0.2839 c_mid 3e-12 c_last 3e-15 t=103s
+a -0.9000 lam 0.502096669485 sup 1.2e-04 its 80 peak 1.7933@3.768 fwhm_x 0.2692 c_mid 2e-07 c_last 3e-09 t=189s
+stopping: not converged
