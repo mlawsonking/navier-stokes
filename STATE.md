@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-14 (late evening). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-14 (night; no jobs running). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -22,7 +22,7 @@ lam is solved as an unknown. Rung 2b (2D Boussinesq) has not been started.
 |---|---|---|---|
 | Stable CCF profile | lam_0 = 1.1807776628999 | published 1.1807776628998 | reproduces literature |
 | 1st unstable CCF profile | lam_1 = 0.605733701203 (+-2e-12) | published 0.6057337012032; two solvers, two equation forms | reproduces literature |
-| 2nd unstable CCF profile | lam_2 = 0.4713242278 (10 digits) | 4 discretisations within 6e-12; on = off 1e-9; smooth-only refit | agrees with 2511.22819 (0.47132422); disagrees with 0.4713248638620 in the 7th digit |
+| 2nd unstable CCF profile | lam_2 = 0.4713242278 (10 digits) | 4 discretisations within 6e-12; on = off 1e-9; smooth-only refit | agrees with 2511.22819 (0.47132422, read directly) and with the digits 2509.14185 marks as significant (0.47132; see 2a). Second solver `gclm_log` agrees to 5e-8, which is its own rounding floor here |
 | Exact a = 1/2 solution | lam = -2/3 to 1e-15 | hand-derived closed form; in tests and `runs/gclm_log_check.py` | check of the general-a solvers |
 | Stable branch lam_0(a) | about 10 digits, -1 <= a <= -0.3 | consistent with Lushnikov-Silantyev-Siegel Table 1 (3-4 digits) | old solver, not re-checked with on = off |
 | 1st unstable branch lam_1(a) | -1.36 <= a <= -0.08; table in HANDOFF and `runs/gclm_u1_branch.jsonl` | on = off; 12 digits for a <= -0.5, degrading to about 6 near a = -0.08 | NEW as far as the literature agents found (not verified by me) |
@@ -30,6 +30,43 @@ lam is solved as an unknown. Rung 2b (2D Boussinesq) has not been started.
 | ... lam_1 + a nearly constant | -0.416 to -0.423 for -0.41 <= a <= -0.11 | observation | unexplained |
 | Non-smooth family mu(lam), a = -1 | mu = 2 at lam_1; min 1.9259 near 0.53; 2 at lam_2; max 2.01342 near 0.4594; 2.01103 at 0.45593; 2.00689 at 0.454589 and falling | on = off about 1e-9 from lam = 0.515 down | NEW (same caveat); exponent law derived here, unchecked |
 | 3rd unstable CCF profile lam_3 | NOT FOUND; may not lie on this family | family tracked to lam = 0.454544 (mu = 2.00662, peak 58.5, on = off 5e-8), where the tracker stalled (steps below 1e-5). On the last 9 points mu - 2 is linear in 1/peak with intercept +0.0022 at infinite peak, and lam -> 0.4535..0.4545 there: the data suggest the family ends in a singular profile BEFORE mu returns to 2. Suggestive only (extrapolation over a factor of 1.7 in peak) | 2511.22819 reports peak about 40 at 0.455 (mine 40.9 at 0.45495) and expects a third profile below 0.455 |
+
+### 2a. Confirmation work done 2026-11-14 (night)
+- lam_2 with the second solver (`runs/lam2_crosscheck.py`, ledger case `lam2-crosscheck-gclm_log`): the
+  ccf_sing solution converted to the `gclm_log` representation (Omega agrees to 6.5e-12) and re-solved in
+  vorticity form gives lam = 0.4713241768 (n = 640) and 0.4713241834 (n = 800, h = 0.01), i.e. 5e-8 and
+  4e-8 below the ccf_sing value, with residual 1.3e-7 / 2.1e-7 (on = off) that Gauss-Newton cannot reduce.
+  Reading: the vorticity form is one derivative higher than the Burgers form, so its rounding floor at this
+  peak is about 1e-7 (the SAME function has Burgers residual 3.6e-10 and vorticity residual 4.6e-7). So this
+  is a 7-digit confirmation only (0.4713242), not an independent 10-digit one. The 10 digits still rest on
+  four ccf_sing discretisations, which share one equation form. Honest status: 7 digits confirmed two ways.
+- Papers read directly by me (arXiv HTML, text search plus the results figure), replacing the agent reports:
+  - 2511.22819: "inferred lam_s = 0.47132422"; no variation of their residual for lam in
+    [0.471324222, 0.471324226]; peak "nearly 40 for lam about 0.455"; a non-smooth signal at the origin
+    "remains for all tested lam in [0.455, 0.4713]"; a third profile, "if it exists", is at a sharper peak.
+    All consistent with my family data (non-smooth throughout, peak 40.9 at 0.45495).
+  - 2509.14185: body text says "lam_2 = 0.4703 with residuals of order 1e-7" (0.4703 is presumably a typo).
+    The table in Fig. 2f prints 0.4713248638620 with only "0.47132" in bold, and the caption says the
+    significant digits are the bold ones. So there is NO disagreement with that paper: the digits that
+    differ from mine are ones the authors do not claim. The earlier "disagrees in the 7th digit" is withdrawn.
+    For lam_1 they bold 0.60573370120, all of which I reproduce.
+  - 2603.25104 (Huang, Tong, Wang): Thm 2.4 as reported (a = 0, odd degenerate data, c_l = 1/2, c_omega = -1,
+    limit -pi(delta(X-1) - delta(X+1)), H = 2/(1-X^2)). Thm 2.6: for a < 0, HALF-LINE case, exact profile
+    -sin(pi mu) 1{X>1} |1-X|^(-mu) ... with mu = 1/(1-a), c_l = 1-a (my lam = -a). For the ODD case they have
+    numerics only (Table 5.1/6.1, dynamic rescaling, about 3 digits), gamma = 1 + lam:
+        a      -0.1    -0.2    -0.3    -0.4    -0.5    -0.6    -0.7    -0.8    -0.9    -1.0
+        gamma  0.7827  0.9114  1.0124  1.0986  1.1821  1.2782  1.3888  1.4858  1.5866  1.6841
+        mine   0.6785  0.7759  0.8783  0.9843  1.0868  1.1904  1.2941  1.3979  1.5018  1.6057   (1 + lam_1)
+    and gamma = 1/2 at a = 0 (theorem). Their singular odd family lies 0.08 to 0.14 ABOVE my smooth branch
+    for a <= -0.1, but drops to 0.5 at a = 0 while my branch is at 0.652 at a = -0.0712, so the two curves
+    must cross in (-0.1, 0).
+- HYPOTHESIS (new, untested): the first unstable smooth branch ends where it meets the Huang-Tong-Wang
+  singular odd family, i.e. at the a_c where gamma_HTW(a_c) = 1 + lam_1(a_c). My fit (a_c = -0.037, lam_1
+  about -0.375, gamma about 0.625) is in the range where that crossing has to be, and the shape of the end
+  (peak mass / y* tending to a constant, profile vanishing inside the peak relative to it, Omega'(0) -> 0 in
+  the peak's own units) is what merging into a delta-at-X=1 profile would look like. Test: get gamma_HTW for
+  -0.1 < a < 0 (dynamic rescaling of odd degenerate data; they tabulate nothing there) and see whether it
+  passes through (-0.037, 0.625).
 
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
@@ -51,7 +88,7 @@ Not established, do not quote: where the unstable a-branch ends. What is known (
   not smooth at the origin, with peak |Omega| = tan(pi alpha/4), which diverges as alpha -> 2 (lam -> -1/2).
 - My first guess (branch converges onto a member of that family with alpha near 1.7) is REFUTED by the
   amplitude: that member has peak 4.5, the branch has 225 and growing.
-- Literature lead (agent report on arXiv:2603.25104, NOT verified by me): their Thm 2.4 says that at a = 0,
+- Literature (arXiv:2603.25104, now read directly, see 2a): their Thm 2.4 says that at a = 0,
   odd degenerate data give the limit Omega = -pi(delta(X-1) - delta(X+1)), H Omega = 2/(1 - X^2), with their
   gamma = 1/2 (my lam = -1/2) — the alpha -> 2 end of the family above; and for a < 0 their numerics show
   odd profiles singular at X = +-1 (my lam about -0.22 at a = -0.1, a different object from my branch,
@@ -117,6 +154,9 @@ forgotten second tracker slowed everything for an hour).
 7. Too narrow a sinh map (eps = 0.33 FWHM) gives a coefficient plateau and 7th-digit errors; eps near the
    FWHM is safe.
 8. Sub-agent literature reports are leads, not facts. Two of them disagree about what 2509.14185 says.
+   Read directly it turned out the "disagreeing" digits were ones that paper marks as not significant.
+12. The vorticity-form solvers (`ccf_fast`, `gclm_log`) have a rounding floor about 1e3 times higher than the
+    Burgers form (`ccf_sing`) at a sharp peak (1e-7 at lam_2): they cannot confirm more than 7 digits there.
 9. The absolute residual floor grows like peak^2/width (rounding), so a fixed absolute threshold stalls a
    branch whose peak is diverging. Use a relative threshold together with on = off.
 10. A lower bound on the map width (`EPSMIN`, 0.004 then 0.002 in old scripts) silently under-resolves a
@@ -127,9 +167,10 @@ forgotten second tracker slowed everything for an hour).
 ## 6. Open items, in order
 1. lam_3: continue the family; pin; verify at two or more resolutions with on = off; smooth-only refit.
 2. Branch end: test the a = 0 hypothesis (compare the profile near a = -0.05 with the explicit family; fit alpha).
-3. Independent confirmation of lam_2 (and lam_3 if found) with `gclm_log.py` at a = -1: different equation
-   form and representation.
-4. Read 2511.22819, 2509.14185, 2603.25104 directly (figures and tables) instead of through agents.
+3. DONE (7 digits only, see 2a). A genuinely independent 10-digit check of lam_2 would need a second
+   Burgers-form discretisation (e.g. different basis or a finite-difference/Newton solve), not `gclm_log`.
+4. DONE (see 2a). New item from it: test the branch-end hypothesis by computing gamma_HTW(a) for
+   -0.1 < a < 0 (dynamic rescaling of the gCLM equation from odd data with Omega'(0) = 0).
 5. Questions for the math session: end of the fourth update in HANDOFF.md, plus the a = 0 derivation above.
 6. Unexplained: residual floor about 6e-10 at lam_2 with coefficients at 1e-14; the 1e-6 mid-spectrum
    plateau on the a-branch for a > -0.6 (possibly an inner layer at the origin as the branch nears its end).
