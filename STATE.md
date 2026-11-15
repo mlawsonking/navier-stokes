@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-14 (evening). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-14 (late evening). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -28,20 +28,30 @@ lam is solved as an unknown. Rung 2b (2D Boussinesq) has not been started.
 | 1st unstable branch lam_1(a) | -1.36 <= a <= -0.08; table in HANDOFF and `runs/gclm_u1_branch.jsonl` | on = off; 12 digits for a <= -0.5, degrading to about 6 near a = -0.08 | NEW as far as the literature agents found (not verified by me) |
 | ... crosses lam_1 = 0 | at a = -0.41615 (interpolated) | representation regular through lam = 0 (`gclm_log.py`) | NEW (same caveat) |
 | ... lam_1 + a nearly constant | -0.416 to -0.423 for -0.41 <= a <= -0.11 | observation | unexplained |
-| Non-smooth family mu(lam), a = -1 | mu = 2 at lam_1; min 1.9259 near 0.53; 2 at lam_2; max 2.01342 near 0.4594; 2.01103 at 0.45593 and falling | on = off about 1e-9 from lam = 0.515 down | NEW (same caveat); exponent law derived here, unchecked |
-| 3rd unstable CCF profile lam_3 | NOT FOUND YET | family still at mu > 2 at lam = 0.4559 | 2511.22819 expects it below 0.455 |
+| Non-smooth family mu(lam), a = -1 | mu = 2 at lam_1; min 1.9259 near 0.53; 2 at lam_2; max 2.01342 near 0.4594; 2.01103 at 0.45593; 2.00689 at 0.454589 and falling | on = off about 1e-9 from lam = 0.515 down | NEW (same caveat); exponent law derived here, unchecked |
+| 3rd unstable CCF profile lam_3 | NOT FOUND YET | family at lam = 0.454589: mu = 2.00689, falling at d mu/d lam about 5.5 and steepening; peak 55. Naive extrapolation: mu = 2 near lam = 0.4536-0.4540 | 2511.22819 expects it below 0.455 |
 
-Not established, do not quote: where the unstable a-branch ends. Hypothesis (derived 2026-11-14, UNTESTED):
-at a = 0 the profile equation is the imaginary part of G + (1+lam) z G' - G^2/2 = 0 for G = U' - i Omega
-(analytic in the upper half plane), so (1+lam) z G' = G(G-2)/2 and
-
-    G = 2/(1 + c e^(-i pi alpha/2) z^alpha),   alpha = 1/(1+lam),  c > 0.
-
-For 1 < alpha < 2 (lam in (-1/2, 0)) this has no pole in the closed upper half plane, has the right parity,
-decays like y^(-alpha), and is NOT smooth at the origin (Omega ~ |y|^alpha). The smooth branch may converge
-onto one member as a -> 0-: on the branch the peak of |Omega| grows without bound (58 at a = -0.11, 150 at
-a = -0.08), the far-field amplitude q0 -> 0, and the peak moves toward the origin (normalisation
-Omega'(0) = -0.1, so in peak units the origin slope -> 0).
+Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
+- Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
+  Lorentzian: height 42 -> 225 for a = -0.126 -> -0.071, position y* 1.28 -> 0.47, height x FWHM / y*
+  nearly constant (1.20 -> 1.29), far-field amplitude q0 -> 0 (-0.247 -> -0.018), lam_1 + a = -0.42,
+  U'(0) = 1.51 -> 1.54. Fit of the end point: `runs/branch_end_fit.py` (output pending when this was written).
+- Derived here (for the math session to check): at a = 0 the profile equation is the imaginary part of
+  G + (1+lam) z G' - G^2/2 = 0, G = U' - i Omega analytic in the upper half plane, so
+  (1+lam) z G' = G(G-2)/2 and G = 2/(1 - C z^alpha), alpha = 1/(1+lam). A smooth odd profile needs alpha = 1,
+  i.e. lam = 0: the classical CLM profile is the ONLY smooth self-similar profile at a = 0. So the unstable
+  branch (lam_1 near -0.4 there) cannot reach a = 0 as a smooth profile: it must end, or become singular,
+  at some a_c <= 0. For 1 < alpha < 2, G = 2/(1 + c e^(-i pi alpha/2) z^alpha) is an explicit profile that is
+  not smooth at the origin, with peak |Omega| = tan(pi alpha/4), which diverges as alpha -> 2 (lam -> -1/2).
+- My first guess (branch converges onto a member of that family with alpha near 1.7) is REFUTED by the
+  amplitude: that member has peak 4.5, the branch has 225 and growing.
+- Literature lead (agent report on arXiv:2603.25104, NOT verified by me): their Thm 2.4 says that at a = 0,
+  odd degenerate data give the limit Omega = -pi(delta(X-1) - delta(X+1)), H Omega = 2/(1 - X^2), with their
+  gamma = 1/2 (my lam = -1/2) — the alpha -> 2 end of the family above; and for a < 0 their numerics show
+  odd profiles singular at X = +-1 (my lam about -0.22 at a = -0.1, a different object from my branch,
+  which has lam_1 = -0.32 there). They state no classification that would exclude my branch. A delta at X = 1
+  of mass pi, smoothed, has height x FWHM = 2 in units with U'(0) = 2; my branch has 1.29 x (2/1.54) = 1.68
+  and rising. Consistent with a delta-type limit, not established.
 
 ## 3. Code map (`gpu_solver/`)
 - `ccf.py` — `Grid` (sinh grid, optional Lorentzian cluster), old autodiff residual.
@@ -55,22 +65,25 @@ Omega'(0) = -0.1, so in peak units the origin slope -> 0).
 - `burgers.py`, `clm.py`, `hilbert.py`, `lm.py`, `batch_lm.py` — rung 1.
 
 ## 4. How to resume (Git Bash, repo root, `export PYTHONPATH=.`)
-Family below lam_2, looking for lam_3 (GPU, 5-7 min per step at n0 = 1024):
+Family below lam_2, looking for lam_3 (GPU; 2-9 min per step at n0 = 1024, steps of 3e-5 to 5e-5 in lam):
 
-    SRC=runs/sing_track2_v6.pt .venv/Scripts/python -u runs/sing_track2.py 0.43 0.0005 v7 1024 8 4 0.0125
+    SRC=runs/sing_track2_v10.pt EPSMIN=0.00004 ACCEPT=3e-7 .venv/Scripts/python -u runs/sing_track2.py 0.44 0.00005 v11 1024 8 4 0.0125
 
-Watch `mu`: a smooth profile is where mu returns to 2. Then pin it (mu = 2 fixed, lam free) and refit with
-the smooth basis only:
+(use the newest `runs/sing_track2_v*.pt` that exists; v8 is the last one committed). Watch `mu`: a smooth
+profile is where mu returns to 2. Then pin with the smooth basis only, lam unknown:
 
-    .venv/Scripts/python -u runs/sing_smooth.py TRACK.pt LAM_NEAR N0 0.0125 runs/ccf_u3_a.pt
-    .venv/Scripts/python -u runs/sing_to_smooth.py runs/ccf_u3_a.pt N0 0.0125 runs/ccf_u3_smooth.pt
+    .venv/Scripts/python -u runs/sing_pin2.py TRACK.pt runs/ccf_u3.pt 1024 0.0125
 
-Both of those still build "box" grids: switch them to `S.peak_grid` first (the box grid fails for peaks
-this sharp).
+Tried and failed at mu = 2.007 (do not repeat without a new idea): `runs/sing_mu_march.py` (march in mu with
+lam unknown: Newton diverges even for d mu = 1e-4) and `sing_pin2.py` straight from mu = 2.007 (start
+residual 0.2). At this peak sharpness Gauss-Newton only converges from the 3-point predictor of the lam-march.
+`sing_smooth.py` and `sing_to_smooth.py` are the older "box"-grid versions (fine for lam_2, not for lam_3).
 
 First unstable branch in a (CPU, seconds per step):
 
-    THREADS=6 EPSF=1.0 ACCEPT=3e-6 .venv/Scripts/python -u runs/gclm_log_branch.py runs/gclm_log_branch_w8.pt 0.3 0.002 w9 640
+    THREADS=6 EPSF=1.0 ACCEPT=1e-8 .venv/Scripts/python -u runs/gclm_log_branch.py runs/gclm_log_branch_w10.pt 0.3 0.001 w11 640
+
+(ACCEPT is now RELATIVE to peak^2/width; the run stopped at a = -0.0712 on that threshold, about 100 s per step.)
 
 Checks:
 
@@ -98,6 +111,12 @@ forgotten second tracker slowed everything for an hour).
 7. Too narrow a sinh map (eps = 0.33 FWHM) gives a coefficient plateau and 7th-digit errors; eps near the
    FWHM is safe.
 8. Sub-agent literature reports are leads, not facts. Two of them disagree about what 2509.14185 says.
+9. The absolute residual floor grows like peak^2/width (rounding), so a fixed absolute threshold stalls a
+   branch whose peak is diverging. Use a relative threshold together with on = off.
+10. A lower bound on the map width (`EPSMIN`, 0.004 then 0.002 in old scripts) silently under-resolves a
+    sharpening peak. Check the printed `eps` is not sitting on its floor.
+11. With a very sharp peak the truncated-SVD step is only reliable from an excellent predictor; a looser
+    cutoff (1e-6) is more robust but stalls at 1e-6. `tsvd_gn` starts at `rc0` and tightens to `rc`.
 
 ## 6. Open items, in order
 1. lam_3: continue the family; pin; verify at two or more resolutions with on = off; smooth-only refit.

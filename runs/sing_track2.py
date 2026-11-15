@@ -49,7 +49,8 @@ while lam >= lam_end - 1e-12:
         guess, cur, yg = p.clone(), mp, ypk
     guess[0] = lam; F.MAP = cur
     G = S.peak_grid(lam, yg, cur, n0, h=h, R=RR, device=DEV)
-    q, hist = S.gn(guess, G, shape, free=(False, True), max_iter=int(os.environ.get("MAXIT", 25)))
+    print(f"  try lam {lam:.6f} rows {G.y.numel()} sources {G.ys.numel()} eps {cur[1]:.5f} t={time.time()-t0:.0f}s", flush=True)
+    q, hist = S.gn(guess, G, shape, free=(False, True), max_iter=int(os.environ.get("MAXIT", 25)), verbose=bool(os.environ.get("VERBOSE")), rc0=float(os.environ.get("RC0", 1e-9)))
     F.MAP = cur; sup = S.residual(q, G, shape).abs().max().item(); del G; torch.cuda.empty_cache()
     if not sup < ACC:
         lam = round(lam + step, 10); step = step / 2; lam = round(lam - step, 10)

@@ -221,39 +221,43 @@ def remap0(p, old_map, new_map, shape, device):
     return q
 
 
-def tsvd_gn(resjac, resid, p0, idx, max_iter=25, rc=1e-9, tol=1e-14, verbose=False, svd=True):
+def tsvd_gn(resjac, resid, p0, idx, max_iter=25, rc=1e-9, tol=1e-14, verbose=False, svd=True, rc0=1e-6):
     """Gauss-Newton with a truncated-SVD pseudo-inverse of the column-scaled Jacobian and step halving.
-    The singular blocks make the Jacobian numerically rank-deficient (about 30 singular values below 1e-12
-    near mu = 2); damping (LM) then crawls, while discarding those directions converges quadratically.
+    The Jacobian is numerically rank-deficient here (about 30 singular values below 1e-12 near mu = 2);
+    damping (LM) crawls, while discarding those directions converges quadratically.
+    The cutoff starts at rc0 (robust far from the solution: sloppy directions make the full step useless
+    when the peak is very sharp) and is tightened by 10x down to rc whenever a full step no longer gains.
     resjac(p) -> (r, J over the unknowns idx), resid(p) -> r. Returns p, history [(it, sup, l2, t, rank)]."""
-    p = p0.clone(); hist = []
+    p = p0.clone(); hist = []; cut = max(rc0, rc)
     r, J = resjac(p)
     for it in range(max_iter):
         d = J.norm(dim=0).clamp_min(1e-300)
-        if svd:
-            # SVD on the CPU (LAPACK gesdd): the CUDA SVD is slow here and once hung. QR-Tikhonov with the
-            # same cutoff does NOT converge (tested), so the truncation has to be a real SVD.
-            U, sv, Vh = torch.linalg.svd((J / d).cpu(), full_matrices=False); keep = sv > rc * sv[0]
-            st = (Vh[keep].T @ ((U[:, keep].T @ -r.cpu()) / sv[keep])).to(J.device) / d; rank = int(keep.sum())
-        else:                                   # same filter as a QR-Tikhonov solve (GPU SVD is very slow here)
-            m = J.shape[1]; eye = torch.eye(m, dtype=DT, device=J.device)
-            Qm, Rm = torch.linalg.qr(torch.cat([J / d, (rc * 5.0) * eye]))
-            st = torch.linalg.solve_triangular(Rm, (Qm[:J.shape[0]].T @ -r)[:, None], upper=True)[:, 0] / d; rank = m
-        t, ok = 1.0, False
-        while t > 1e-3:
-            pn = p.clone(); pn[idx] = pn[idx] + t * st; rn = resid(pn)
-            if torch.isfinite(rn).all() and rn.norm() < r.norm():
-                ok = True; break
-            t /= 2
+        # real SVD on the CPU (LAPACK gesdd): the CUDA SVD is slow here and once hung, and QR-Tikhonov with
+        # the same cutoff does NOT converge (tested)
+        U, sv, Vh = torch.linalg.svd((J / d).cpu(), full_matrices=False)
+        while True:
+            keep = sv > cut * sv[0]
+            st = (Vh[keep].T @ ((U[:, keep].T @ -r.cpu()) / sv[keep])).to(J.device) / d
+            t, ok = 1.0, False
+            while t > 1e-3:
+                pn = p.clone(); pn[idx] = pn[idx] + t * st; rn = resid(pn)
+                if torch.isfinite(rn).all() and rn.norm() < r.norm():
+                    ok = True; break
+                t /= 2
+            gain = 1 - (rn.norm() / r.norm()).item() if ok else 0.0
+            if (not ok or (t == 1.0 and gain < 0.5)) and cut > rc * 1.0001:
+                cut = max(cut / 10, rc); continue          # truncation floor reached: tighten the cutoff
+            break
         if not ok:
             break
-        gain = 1 - (rn.norm() / r.norm()).item()
         p = pn; r, J = resjac(p)
-        hist.append((it, r.abs().max().item(), r.norm().item(), t, rank))
+        hist.append((it, r.abs().max().item(), r.norm().item(), t, int(keep.sum())))
         if verbose:
-            print(f"  gn {it} sup {hist[-1][1]:.2e} t {t:.3f} rank {hist[-1][4]}", flush=True)
-        if hist[-1][1] < tol or gain < 0.3 and hist[-1][1] < 1e-7:
+            print(f"  gn {it} sup {hist[-1][1]:.2e} t {t:.3f} rank {hist[-1][4]} cut {cut:.0e}", flush=True)
+        if hist[-1][1] < tol or (gain < 0.3 and cut <= rc * 1.0001 and hist[-1][1] < 1e-6):
             break
+        if len(hist) > 2 and hist[-1][3] < 0.2 and hist[-2][3] < 0.2 and hist[-1][1] > 1e-6:
+            break                               # two heavily damped steps far from convergence: start is too far
     return p, hist
 
 

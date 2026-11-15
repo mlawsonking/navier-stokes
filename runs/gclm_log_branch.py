@@ -25,7 +25,7 @@ def remap(p, old, new):
     F.MAP = new; return torch.cat([p[:2], torch.linalg.solve(F.basis3(s, n)[0], N)])
 
 def align(p, mp):
-    pk, ypk, x0, fw = measure(p, mp); own = (x0, max(EPSF * fw, 0.004))
+    pk, ypk, x0, fw = measure(p, mp); own = (x0, max(EPSF * fw, 0.0002))
     return remap(p, mp, own), own, ypk, pk
 
 S0 = torch.load(src); states = []
@@ -51,14 +51,17 @@ while (a - a_end) * sgn <= 1e-12:
     sup = L.residual(q[0], q[1:], G, a).abs().max().item()
     G2 = S.peak_grid(guess[0].item(), yg, cur, guess.numel() - 2, h=h * 0.8, R=RR * 1.3, device=DEV, shift=0.37, widen=1.4)
     off = L.residual(q[0], q[1:], G2, a).abs().max().item(); del G, G2
-    if not (off < float(os.environ.get("ACCEPT", 1e-7))):
+    # the terms of the residual are of size peak^2/width, so the rounding floor grows with the peak:
+    # accept on the residual RELATIVE to that scale (and still require on-grid = off-grid within 10x)
+    pk0, _, _, fw0 = measure(q, cur); scale = max(1.0, pk0 * pk0 / max(fw0 / 2, 1e-12) * 1e-3)
+    if not (off / scale < float(os.environ.get("ACCEPT", 1e-7)) and off < 10 * sup + 1e-9):
         a = round(a - sgn * step, 10); step = step / 2; a = round(a + sgn * step, 10)
         print(f"  rejected (sup {sup:.1e} off {off:.1e} its {len(hist)}); step -> {step}", flush=True)
         if step < 1e-5: print("stopping: step too small"); break
         continue
     q, own, yq_, pk = align(q, cur); c = q[2:].abs(); n = c.numel()
-    print(f"a {a:+.5f} lam {q[0].item():+.12f} q0 {q[1].item():+.8f} sup {sup:.1e} OFF {off:.1e} its {len(hist)} peak {pk:.4f}@{yq_:.3f} eps {own[1]:.4f} c_mid {c[n//2-2:n//2+1].max().item():.0e} c_last {c[-3:].max().item():.0e} t={time.time()-t0:.0f}s", flush=True)
-    out.write(json.dumps(dict(case="gclm-u1-log-" + tag, a=a, n_basis=n, quad_h=h, lam=q[0].item(), q0=q[1].item(), res_sup=sup, res_offgrid=off, iters=len(hist), peak=pk, y_peak=yq_, map=list(own))) + "\n"); out.flush()
+    print(f"a {a:+.5f} lam {q[0].item():+.12f} q0 {q[1].item():+.8f} sup {sup:.1e} OFF {off:.1e} rel {off/scale:.1e} its {len(hist)} peak {pk:.4f}@{yq_:.3f} eps {own[1]:.4f} c_mid {c[n//2-2:n//2+1].max().item():.0e} c_last {c[-3:].max().item():.0e} t={time.time()-t0:.0f}s", flush=True)
+    out.write(json.dumps(dict(case="gclm-u1-log-" + tag, a=a, n_basis=n, quad_h=h, lam=q[0].item(), q0=q[1].item(), res_sup=sup, res_offgrid=off, res_rel=off / scale, iters=len(hist), peak=pk, y_peak=yq_, map=list(own))) + "\n"); out.flush()
     states.append((q, own, yq_, a)); states = states[-3:]
     sols.append(dict(a=a, p=q.clone().cpu(), map=own, ypk=yq_)); torch.save(sols, f"runs/gclm_log_branch_{tag}.pt")
     step = min(step * 1.5, step0); a = round(a + sgn * step, 10)
