@@ -29,13 +29,19 @@ lam is solved as an unknown. Rung 2b (2D Boussinesq) has not been started.
 | ... crosses lam_1 = 0 | at a = -0.41615 (interpolated) | representation regular through lam = 0 (`gclm_log.py`) | NEW (same caveat) |
 | ... lam_1 + a nearly constant | -0.416 to -0.423 for -0.41 <= a <= -0.11 | observation | unexplained |
 | Non-smooth family mu(lam), a = -1 | mu = 2 at lam_1; min 1.9259 near 0.53; 2 at lam_2; max 2.01342 near 0.4594; 2.01103 at 0.45593; 2.00689 at 0.454589 and falling | on = off about 1e-9 from lam = 0.515 down | NEW (same caveat); exponent law derived here, unchecked |
-| 3rd unstable CCF profile lam_3 | NOT FOUND YET | family at lam = 0.454589: mu = 2.00689, falling at d mu/d lam about 5.5 and steepening; peak 55. Naive extrapolation: mu = 2 near lam = 0.4536-0.4540 | 2511.22819 expects it below 0.455 |
+| 3rd unstable CCF profile lam_3 | NOT FOUND; may not lie on this family | family tracked to lam = 0.454544 (mu = 2.00662, peak 58.5, on = off 5e-8), where the tracker stalled (steps below 1e-5). On the last 9 points mu - 2 is linear in 1/peak with intercept +0.0022 at infinite peak, and lam -> 0.4535..0.4545 there: the data suggest the family ends in a singular profile BEFORE mu returns to 2. Suggestive only (extrapolation over a factor of 1.7 in peak) | 2511.22819 reports peak about 40 at 0.455 (mine 40.9 at 0.45495) and expects a third profile below 0.455 |
 
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
   Lorentzian: height 42 -> 225 for a = -0.126 -> -0.071, position y* 1.28 -> 0.47, height x FWHM / y*
-  nearly constant (1.20 -> 1.29), far-field amplitude q0 -> 0 (-0.247 -> -0.018), lam_1 + a = -0.42,
-  U'(0) = 1.51 -> 1.54. Fit of the end point: `runs/branch_end_fit.py` (output pending when this was written).
+  nearly constant (1.20 -> 1.32), far-field amplitude q0 -> 0 (-0.247 -> -0.018), lam_1 + a = -0.42,
+  U'(0) = 1.51 -> 1.54.
+- Fit of the end point (`runs/branch_end_fit.py`, tail a > -0.10, power laws in a_c - a): FWHM/y* gives
+  a_c = -0.0365 (exponent 1.71), 1/peak gives -0.0350 (1.85), q0 gives -0.0380 (2.77), y* gives -0.0345
+  (1.13). Forcing a_c = 0 is 10 to 30 times worse in rms for every quantity. So the branch appears to end at
+  a_c = -0.037 +- 0.005, STRICTLY before a = 0, with the peak collapsing onto the origin (y* -> 0 about
+  linearly) while its relative width -> 0 and its height diverges; lam_1 extrapolates to about -0.375 there.
+  Exponents are not clean (they drift with the fitting window): provisional.
 - Derived here (for the math session to check): at a = 0 the profile equation is the imaginary part of
   G + (1+lam) z G' - G^2/2 = 0, G = U' - i Omega analytic in the upper half plane, so
   (1+lam) z G' = G(G-2)/2 and G = 2/(1 - C z^alpha), alpha = 1/(1+lam). A smooth odd profile needs alpha = 1,
