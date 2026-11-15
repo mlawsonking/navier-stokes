@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-14 (night; no jobs running). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-15 (no jobs running). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -60,13 +60,41 @@ lam is solved as an unknown. Rung 2b (2D Boussinesq) has not been started.
     and gamma = 1/2 at a = 0 (theorem). Their singular odd family lies 0.08 to 0.14 ABOVE my smooth branch
     for a <= -0.1, but drops to 0.5 at a = 0 while my branch is at 0.652 at a = -0.0712, so the two curves
     must cross in (-0.1, 0).
-- HYPOTHESIS (new, untested): the first unstable smooth branch ends where it meets the Huang-Tong-Wang
+- HYPOTHESIS (CONTRADICTED the next day, see 2b): the first unstable smooth branch ends where it meets the Huang-Tong-Wang
   singular odd family, i.e. at the a_c where gamma_HTW(a_c) = 1 + lam_1(a_c). My fit (a_c = -0.037, lam_1
   about -0.375, gamma about 0.625) is in the range where that crossing has to be, and the shape of the end
   (peak mass / y* tending to a constant, profile vanishing inside the peak relative to it, Omega'(0) -> 0 in
   the peak's own units) is what merging into a delta-at-X=1 profile would look like. Test: get gamma_HTW for
   -0.1 < a < 0 (dynamic rescaling of odd degenerate data; they tabulate nothing there) and see whether it
   passes through (-0.037, 0.625).
+
+### 2b. Branch end revisited 2026-11-15: the 2a hypothesis is CONTRADICTED; "ends strictly before a = 0" is WITHDRAWN
+- Fingerprint test on the last solution, a = -0.0712 (`runs/branch_end_fingerprint.py`). The HTW a < 0 singular
+  profile would need a one-sided power law (X-1)^(-mu) and V = (1+lam) y + a U = 0 at the front. Found instead:
+  the peak is a SYMMETRIC Lorentzian (half-widths left/right 2.89e-3 / 2.94e-3 of y*), U' is antisymmetric
+  about it (+111 just inside, -109 just outside), and V at the peak is 0.49 (1+lam) y*, not zero. Away from the
+  peak U'(y)/U'(0) follows 1/(1 - X^2), X = y/y*: 1.92 vs 1.96 at X = 0.7, 5.0 vs 5.26 at 0.9, -4.48 vs -4.76
+  at 1.1, -1.40 vs -1.45 at 1.3. So the profile is a pair of simple poles close to the real axis at X = +-1,
+  i.e. a smoothed version of the HTW a = 0 delta-pair profile (their Thm 2.4), NOT their a < 0 family.
+- Fits redone (`runs/branch_end_fit2.py`): a finite end point q ~ (a_c - a)^e against an essential singularity
+  at a = 0, q ~ |a|^p exp(-C/|a|) (same number of parameters). The exponential form fits as well or better in
+  every window (FWHM/y*: rms 1.8e-4..4.4e-4 vs 3.2e-4..1.7e-3; 1/peak: 3e-5..3e-4 vs 4e-5..1.6e-3), its
+  constant is stable (C = 0.193..0.207 for the width) while the power-law a_c drifts toward 0 as the window
+  moves to the end (-0.043, -0.039, -0.0365, -0.035), and fitted on -0.13 < a < -0.085 it predicts the last
+  point better (log FWHM/y*: actual -5.141, exponential -5.137, power law -5.172). A drifting a_c is what an
+  essential singularity looks like through a power-law fit.
+- Mechanism (heuristic, mine, unchecked): near a pole of residue r the a = 0 identity gives r = -2 V*, V* the
+  transport speed at the pole. For a < 0, V* = (1+lam) + a U(1) in X units and U(1) = (U'(0)/2) log(2/eps)
+  for a pole pair at distance eps from the axis, so log(2/eps) = 2 (gamma - U'(0)/4) / (|a| U'(0)): the pole
+  distance is exponentially small in 1/|a|. Check at a = -0.0712: measured r = -0.70..-0.77 against
+  -U'(0)/2 = -0.77 and -2 V* = -0.64; predicted C = 0.29 against fitted 0.20..0.26. Right size, not exact.
+- Current reading: the branch most likely continues to a -> 0- with an exponentially thin spike and tends to
+  the delta-pair profile there; a finite end point near -0.037 is NOT excluded by the data but is no longer
+  the preferred description. Neither is established. What would settle it: follow the branch further (each
+  step now costs a factor in resolution), or an asymptotic analysis of the pole for small |a| by the math session.
+- `runs/htw_rescale.py` (dynamic rescaling from odd degenerate data): reproduces the exact a = 0 scaling
+  factors (c_l = 0.500001, c_w = -1.000000). At a = -0.1 the spike sharpens faster than the fixed grid can
+  follow (gamma 0.628 -> 0.697 by tau = 5.5, then under-resolved): no usable value. Not pursued.
 
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
@@ -76,7 +104,7 @@ Not established, do not quote: where the unstable a-branch ends. What is known (
 - Fit of the end point (`runs/branch_end_fit.py`, tail a > -0.10, power laws in a_c - a): FWHM/y* gives
   a_c = -0.0365 (exponent 1.71), 1/peak gives -0.0350 (1.85), q0 gives -0.0380 (2.77), y* gives -0.0345
   (1.13). Forcing a_c = 0 is 10 to 30 times worse in rms for every quantity. So the branch appears to end at
-  a_c = -0.037 +- 0.005, STRICTLY before a = 0, with the peak collapsing onto the origin (y* -> 0 about
+  a_c = -0.037 +- 0.005, STRICTLY before a = 0 [WITHDRAWN as a conclusion, see 2b], with the peak collapsing onto the origin (y* -> 0 about
   linearly) while its relative width -> 0 and its height diverges; lam_1 extrapolates to about -0.375 there.
   Exponents are not clean (they drift with the fitting window): provisional.
 - Derived here (for the math session to check): at a = 0 the profile equation is the imaginary part of
