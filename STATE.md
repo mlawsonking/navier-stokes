@@ -220,7 +220,7 @@ forgotten second tracker slowed everything for an hour).
 11. With a very sharp peak the truncated-SVD step is only reliable from an excellent predictor; a looser
     cutoff (1e-6) is more robust but stalls at 1e-6. `tsvd_gn` starts at `rc0` and tightens to `rc`.
 
-## 6. Open items, in order
+## 6. Open items, in order (superseded where section 7 lists a TODO)
 1. lam_3: continue the family; pin; verify at two or more resolutions with on = off; smooth-only refit.
 2. Branch end: test the a = 0 hypothesis (compare the profile near a = -0.05 with the explicit family; fit alpha).
 3. DONE (7 digits only, see 2a). A genuinely independent 10-digit check of lam_2 would need a second
@@ -232,7 +232,14 @@ forgotten second tracker slowed everything for an hour).
    plateau on the a-branch for a > -0.6 (possibly an inner layer at the origin as the branch nears its end).
 7. Later: rung 2b (2D Boussinesq) in a separate Opus session.
 
-## 7. Where this stands as a contribution (assessment given to Michael on 2026-11-14)
-Mid-stage 3 of 6 toward a short numerical note: (1) solver and (2) reproduce known values are done;
-(3) new numerical facts is partly done; (4) independent confirmation, (5) write-up, (6) posting are not
-started. This is not a result about Navier-Stokes. A third profile would make the note clearly worth posting.
+## 7. Where this stands as a contribution (updated 2026-11-16)
+Stages toward a short numerical note: (1) solver, (2) reproduce known values, (3) new numerical facts and
+(4) confirmation pass are done as far as this session can take them; (5) write-up has a first draft, `NOTE.md`
+(repo root; tables from `runs/make_note_tables.py`); (6) posting not started and needs Michael.
+The most interesting content is now section 5 of the note: the small-|a| law lam_1 ~ -2(1+a)/(5-3a).
+Open before the note could be shown to anyone (all marked [TODO] in NOTE.md):
+- math-session check of the pole argument (HANDOFF fifth update) and of the exponent law (4);
+- re-run with the off-grid test the rows marked "on-grid only" (a <= -0.9 on the branch; lam > 0.4713 on the family);
+- a human literature check of novelty; number of unstable directions along the a-branch;
+- optional: independent Burgers-form check of lam_2 beyond 7 digits; branch closer to a = 0.
+This is not a result about Navier-Stokes. No third profile was found.
