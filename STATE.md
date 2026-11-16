@@ -239,7 +239,11 @@ Stages toward a short numerical note: (1) solver, (2) reproduce known values, (3
 The most interesting content is now section 5 of the note: the small-|a| law lam_1 ~ -2(1+a)/(5-3a).
 Open before the note could be shown to anyone (all marked [TODO] in NOTE.md):
 - math-session check of the pole argument (HANDOFF fifth update) and of the exponent law (4);
-- re-run with the off-grid test the rows marked "on-grid only" (a <= -0.9 on the branch; lam > 0.4713 on the family);
+- DONE 2026-11-16: family between lam_1 and lam_2 recomputed with the current tracker (`sing-track2-x1`,
+  `runs/sing_track2_x1.pt`; on = off <= 4e-9; mu min 1.92587 at 0.53). The OLD files `runs/sing_track_t*.pt` cannot be
+  evaluated with the current `ccf_sing` (residual O(1): the ansatz changed since) and `t2` was wrong at lam = 0.50, 0.49
+  (1.94353, 1.95471 instead of 1.94843, 1.96470): do not use them. Branch rows a <= -1 checked off-grid
+  (`runs/branch_offgrid_check.py`): 6e-9 .. 1e-6, so 7-8 digits there, not 12. Still unchecked: a = -0.9 only;
 - a human literature check of novelty; number of unstable directions along the a-branch;
 - optional: independent Burgers-form check of lam_2 beyond 7 digits; branch closer to a = 0.
 This is not a result about Navier-Stokes. No third profile was found.

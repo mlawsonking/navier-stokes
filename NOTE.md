@@ -101,10 +101,10 @@ Burgers-form discretisation if ten digits are to be claimed.]
 
 | a | lam_1 | -2(1+a)/(5-3a) | peak of abs(Omega) | residual | run |
 |---|---|---|---|---|---|
-| -1.3600 | +0.980312923015 | | 1.124 | 7.9e-13 (on-grid only) | branch-down192b |
-| -1.2000 | +0.813748227860 | | 1.293 | 4.8e-14 (on-grid only) | branch-down192b |
-| -1.1000 | +0.709713573142 | | 1.426 | 7.4e-14 (on-grid only) | branch-down192b |
-| -1.0000 | +0.605733701203 | | 1.590 | 2.1e-13 (on-grid only) | branch-down192b |
+| -1.3600 | +0.980312923015 | | 1.124 | 1.4e-06 | branch-down192b |
+| -1.2000 | +0.813748227860 | | 1.293 | 8.2e-08 | branch-down192b |
+| -1.1000 | +0.709713573142 | | 1.426 | 2.7e-08 | branch-down192b |
+| -1.0000 | +0.605733701203 | | 1.590 | 5.6e-09 | branch-down192b |
 | -0.9000 | +0.501810727477 | | | 6.7e-13 (on-grid only) | branch-verify |
 | -0.8000 | +0.397947442081 | | 2.064 | 2.0e-11 | branch-upe256 |
 | -0.7000 | +0.294148397709 | | 2.426 | 2.4e-11 | branch-upe256 |
@@ -122,7 +122,10 @@ Burgers-form discretisation if ten digits are to be claimed.]
 
 Not all printed digits are significant: about twelve for a <= -0.5, falling to about five at the last point,
 where the residual is accepted relative to its natural scale peak^2/width (the absolute rounding floor grows
-with the peak). The rows marked on-grid predate the acceptance test and have not been re-run. [TODO]
+with the peak). For a <= -1 the solutions (192 basis functions, fitted on the older grid) were checked afterwards on two
+other grids (`runs/branch_offgrid_check.py`): residual 6e-9 at a = -1 growing to 1e-6 at a = -1.36, against
+1e-13 on the fitting grid, so those rows are good to about seven or eight digits, not twelve (the a = -1 value
+nevertheless matches the published one to twelve). The a = -0.9 row predates the test. [TODO]
 
 lam_1 = 0 at a = -0.41615 (interpolated). For a between -0.41615 and 0, lam_1 < 0: the blow-up still focuses, but its spatial scale
 (T-t)^(1+lam) shrinks more slowly than T-t.
@@ -176,18 +179,20 @@ a = -0.071; a finite end point between -0.07 and 0 is not excluded by the data. 
 
 ## 6. The non-smooth family at a = -1
 
-| lam | mu | U'(0) | peak of abs(Omega) | residual | run |
+| lam | mu | U'(0) | peak of abs(Omega) | off-grid residual | run |
 |---|---|---|---|---|---|
-| 0.605734 (lam_1) | 2 | | 1.590 | | smooth |
-| 0.600000 | 1.99123 | 1.298678 | 1.639 | 8.9e-13 (on-grid only) | track-t2 |
-| 0.580000 | 1.96266 | 1.284482 | 1.841 | 7.0e-12 (on-grid only) | track-t2 |
-| 0.560000 | 1.93989 | 1.271324 | 2.113 | 6.6e-11 (on-grid only) | track-t2 |
-| 0.540000 | 1.92709 | 1.259785 | 2.499 | 8.0e-11 (on-grid only) | track-t2 |
-| 0.530000 | 1.92587 | 1.254800 | 2.760 | 3.5e-11 (on-grid only) | track-t2 |
-| 0.520000 | 1.92882 | 1.250404 | 3.088 | 7.9e-11 (on-grid only) | track-t2 |
-| 0.500000 | 1.94353 | 1.242736 | 4.095 | 2.3e-07 (on-grid only) | track-t2 |
-| 0.490000 | 1.95471 | 1.239323 | 5.548 | 3.0e-08 (on-grid only) | track-t2 |
-| 0.480000 | 1.98369 | 1.238027 | 6.242 | 1.4e-08 (on-grid only) | track-t6 |
+| 0.605734 (lam_1) | 2 | 1.302867 | 1.590 | | smooth |
+| 0.600000 | 1.99123 | 1.298678 | 1.639 | 1.3e-11 | track2-x1 |
+| 0.580000 | 1.96266 | 1.284482 | 1.841 | 1.1e-10 | track2-x1 |
+| 0.560000 | 1.93989 | 1.271324 | 2.113 | 3.5e-10 | track2-x1 |
+| 0.540000 | 1.92709 | 1.259785 | 2.499 | 9.2e-10 | track2-x1 |
+| 0.530000 | 1.92587 | 1.254800 | 2.760 | 1.4e-09 | track2-x1 |
+| 0.520000 | 1.92882 | 1.250404 | 3.088 | 1.9e-09 | track2-x1 |
+| 0.510000 | 1.93631 | 1.246612 | 3.516 | 2.5e-09 | track2-x1 |
+| 0.500000 | 1.94843 | 1.243383 | 4.096 | 3.0e-09 | track2-x1 |
+| 0.490000 | 1.96470 | 1.240598 | 4.929 | 3.4e-09 | track2-x1 |
+| 0.478750 | 1.98612 | 1.237703 | 6.463 | 3.6e-09 | track2-x1 |
+| 0.473750 | 1.99565 | 1.236359 | 7.549 | 3.6e-09 | track2-x1 |
 | 0.471324 (lam_2) | 2 | 1.235662 | 8.239 | 4e-10 | smooth |
 | 0.467500 | 2.00615 | 1.234467 | 9.679 | 1.6e-09 | track2-v2 |
 | 0.465000 | 2.00948 | 1.233596 | 10.992 | 2.6e-09 | track2-v2 |
@@ -199,8 +204,9 @@ a = -0.071; a finite end point between -0.07 and 0 is not excluded by the data. 
 | 0.454769 | 2.00779 | 1.228267 | 46.102 | 9.0e-08 | track2-v7 |
 | 0.454544 | 2.00662 | 1.228022 | 58.460 | 4.1e-08 | track2-v10 |
 
-The rows between lam_1 and lam_2 marked on-grid come from the first tracker and are to be re-run with the
-acceptance test before being quoted. [TODO] The smooth profiles are exactly the points mu = 2.
+All rows pass the acceptance test (residual on the second grid equal to the fitting residual). The stretch
+between lam_1 and lam_2 was recomputed on 2026-11-16 (run track2-x1); the first tracker's values there agreed
+to nine digits for lam >= 0.52 and were wrong in the third decimal at lam = 0.50 and 0.49. The smooth profiles are exactly the points mu = 2.
 
 Below lam_2 the exponent rises to 2.01342 near lam = 0.4594 and then falls, while the peak grows without
 visible bound (40 at lam = 0.455, in agreement with arXiv:2511.22819, which reports "nearly 40" there and a
