@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-15 (no jobs running). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-16 (no jobs running). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -95,6 +95,34 @@ lam is solved as an unknown. Rung 2b (2D Boussinesq) has not been started.
 - `runs/htw_rescale.py` (dynamic rescaling from odd degenerate data): reproduces the exact a = 0 scaling
   factors (c_l = 0.500001, c_w = -1.000000). At a = -0.1 the spike sharpens faster than the fixed grid can
   follow (gamma 0.628 -> 0.697 by tau = 5.5, then under-resolved): no usable value. Not pursued.
+
+### 2c. Small-|a| asymptotics of the first unstable branch (2026-11-16): heuristic derivation + numerical support
+Derivation (mine, formal, NOT checked by the math session). X = y/y*, gamma = 1 + lam, G = U' - i Omega.
+Away from the spikes Omega is negligible, so G is a pole pair, G = u0/(1 - z^2), u0 = U'(0), poles a distance eps
+below X = +-1. Expand F = G + V G' - G^2/2 (V = gamma X + a U, U = (u0/2) log|(1+X)/(1-X)|) at the pole z = 1:
+  1. origin (exact, smooth profile with Omega'(0) != 0):   u0 = (1 + gamma)/(1 - a)
+  2. double-pole terms:   V* = u0/4,  V* = gamma + a (u0/2) log(2/eps)   (transport speed at the pole)
+  3. simple-pole terms:   -u0/2 + (gamma + a u0/4) u0/2 + u0^2/8 = 0,  i.e.  gamma + a u0/4 = 1 - u0/4
+(at a = 0 with u0 free these give u0 = 2, gamma = 1/2: the Huang-Tong-Wang delta-pair profile; relation 1 is
+what the smooth branch has instead of u0 = 2.) Relations 1 and 3 give a closed form with no fitted constant:
+      lam_1(a) ~ -2 (1 + a)/(5 - 3 a),      so  lam_1 -> -2/5,  U'(0) -> 8/5  as a -> 0-,
+and relation 2 gives the spike half-width  eps ~ const * exp(-kappa/|a|),  kappa = 2(gamma - u0/4)/u0 -> 1/4.
+Numerical test (`runs/branch_end_asymptotics.py`, all 115 solutions of `gclm_log_branch_w10.pt`):
+- gamma - gamma_pred = +0.185 at a = -0.413, +0.0645 at -0.202, +0.0181 at -0.100, +0.0082 at -0.0712: it
+  vanishes like 1.6..1.8 a^2 (one-parameter fit 1.78 a^2, rms 4.9e-4 on a > -0.12).
+- Cubic extrapolation of the computed gamma to a = 0 gives 0.599 (prediction 0.600). Allowing a free constant in
+  the difference gives -0.007, so the data pin the limit to about 0.60 +- 0.01.
+- |a| log(2/eps) measured exceeds 2(gamma - u0/4)/u0 by 1.3..1.7 times |a| (0.465 vs 0.346 at -0.0712), i.e.
+  eps is about 0.2 times exp(-kappa/|a|) x 2: an O(1) prefactor, as a leading-log relation allows. The fitted
+  C = 0.20..0.27 of section 2b brackets kappa = 1/4.
+- peak x eps -> u0/2 is approached slowly from below (0.51 at -0.41, 0.66 at -0.0712, target 0.77).
+Status: a conjecture with a formal argument and a parameter-free match (three digits in the limit, error
+shrinking like a^2). The weak point of the argument is relation 3: U has a logarithm at the pole and
+|a| log(1/eps) = O(1), so the claim that the log terms do not feed into the simple-pole balance at leading order
+needs a proper matched expansion (inner region zeta = (X-1)/eps, intermediate region where
+Omega ~ V(X)^(-1/|a|)). That is the question for the math session.
+This also explains the old observation "lam_1 + a nearly constant": -2(1+a)/(5-3a) + a + 1.8 a^2 is flat near
+-0.42 over -0.4 < a < -0.1.
 
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
