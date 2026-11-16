@@ -718,3 +718,27 @@ I do not know why yet. Withdrawn: every row of the earlier runs upc288/upw288 (c
 2. mu < 2 between lam_1 and lam_2 and mu > 2 just below lam_2. Does the sign pattern alternate, and is there
    a reason the excursion is so small (min mu = 1.926)?
 3. Why does the a-branch linearisation degenerate as lam_1 -> 0 (a -> -0.416)?
+
+
+## Builder update 2026-11-16 (fifth): for the math session
+Full detail is in STATE.md sections 2a, 2b, 2c. Short version and the questions.
+
+Corrections to earlier builder statements:
+- "lam_2 disagrees with 0.4713248638620 in the 7th digit" is withdrawn: 2509.14185 marks only 0.47132 as
+  significant. lam_2 = 0.4713242 is confirmed by two solvers; digits 8 to 10 (278) rest on one equation form.
+- "the first unstable branch ends at a_c = -0.037, strictly before a = 0" is withdrawn. Near its end the
+  profile is a symmetric pole pair at X = +-1 (U'/U'(0) = 1/(1 - X^2) to a few percent), a smoothed copy of the
+  Huang-Tong-Wang a = 0 delta-pair profile, and the spike width fits |a|^p exp(-C/|a|) at least as well as a
+  finite end point.
+
+Conjecture to check (formal derivation in STATE.md 2c): as a -> 0-,
+    lam_1(a) = -2(1 + a)/(5 - 3a) + O(a^2),   U'(0) -> 8/5,   spike half-width ~ exp(-1/(4|a|)).
+Numerics: computed minus predicted gamma is 1.78 a^2 on -0.12 < a < -0.07; extrapolated limit 0.599 vs 3/5.
+
+Questions:
+1. Is the three-relation pole argument right, in particular the simple-pole balance (relation 3) in the
+   presence of the logarithm of U at the pole? A matched expansion in eps with |a| log(1/eps) fixed is needed.
+2. Can the a^2 coefficient (numerically about 1.8) and the prefactor of eps be derived?
+3. Is the a = 0 statement right: G + (1+lam) z G' - G^2/2 = 0, so the only smooth odd profile at a = 0 is
+   the classical one (lam = 0), and a pole pair needs u0 = 2, gamma = 1/2?
+4. The exponent law for the non-smooth CCF family, mu = lam/(1 + lam - U'(0)) (fourth update), still unchecked.
