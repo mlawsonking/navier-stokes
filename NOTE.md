@@ -28,8 +28,8 @@ We report:
 4. At a = -1, the one-parameter family of NON-smooth profiles, Omega ~ |y|^(mu-1) sgn(y) at the origin, that
    connects the smooth ones: the exponent mu(lam) between lam_1 and lam_2 and below lam_2 down to
    lam = 0.45454, where the peak of the profile has grown to 58 and our solver stalls. No third smooth profile
-   was found; on the computed range mu stays above 2 and the data suggest (weakly) that the family becomes
-   singular before mu returns to 2.
+   was found: the family approaches a singular profile with an inverse-square-root cusp at a stagnation point,
+   near lam = 0.454 with mu about 2.002 (extrapolated), before mu returns to 2.
 
 Nothing here is a statement about the Navier-Stokes or Euler equations.
 
@@ -210,10 +210,22 @@ to nine digits for lam >= 0.52 and were wrong in the third decimal at lam = 0.50
 
 Below lam_2 the exponent rises to 2.01342 near lam = 0.4594 and then falls, while the peak grows without
 visible bound (40 at lam = 0.455, in agreement with arXiv:2511.22819, which reports "nearly 40" there and a
-persisting non-smooth signal on [0.455, 0.4713]). On the last nine points mu - 2 is linear in 1/peak with
-intercept +0.0022 at infinite peak, reached near lam = 0.4535 to 0.4545. If that extrapolation (over a factor
-1.7 in peak) holds, this family ends in a singular profile before becoming smooth again, and a third smooth
-profile, if it exists, is not on it. We could not continue past lam = 0.454544.
+persisting non-smooth signal on [0.455, 0.4713]). We could not continue past lam = 0.454544 (peak 58).
+
+How the peak grows (`runs/family_end_fingerprint.py`). The transport speed V = (1+lam) y - U has its minimum
+at the peak, and that minimum tends to zero in proportion to 1/peak (V at the peak, in units of (1+lam) y*:
+0.0197 at peak 8.7, 0.0059 at 30.3, 0.0031 at 58.7). On both sides of the peak |Omega| decays like
+|y - y*|^(-1/2) (measured exponents -0.52 to -0.59), and peak^2 x half-width is constant (0.84 to 0.88). This is
+the cut-off of a cusp: near a zero of V, (3) gives Omega = lam Theta/V, and a symmetric cusp
+Omega = A |y - y*|^(-1/2) produces V = V* + 2A |y - y*|^(1/2) with A^2 = lam Theta(y*)/2, hence
+peak = lam Theta(y*)/V* and peak^2 x half-width = A^2. The family is therefore approaching a singular profile
+with a stagnation point V(y*) = 0 and an inverse-square-root singularity of Omega there.
+
+Extrapolating in 1/peak (linear and quadratic fits, four windows) puts that profile at lam_c = 0.4528 to
+0.4545 with mu_c = 2.0009 to 2.0031; every fit gives mu_c > 2. If this holds, the family ends in the cusp
+profile before becoming smooth again, and a third smooth profile, if it exists, is not on it. This rests on an
+extrapolation from peak 58 and on a formal local argument. [TODO: math check; whether a family continues
+beyond the cusp profile is unknown.]
 
 ## 7. What is not claimed
 

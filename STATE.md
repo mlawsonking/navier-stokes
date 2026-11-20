@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-16 (no jobs running). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-20 (no jobs running). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -123,6 +123,25 @@ needs a proper matched expansion (inner region zeta = (X-1)/eps, intermediate re
 Omega ~ V(X)^(-1/|a|)). That is the question for the math session.
 This also explains the old observation "lam_1 + a nearly constant": -2(1+a)/(5-3a) + a + 1.8 a^2 is flat near
 -0.42 over -0.4 < a < -0.1.
+
+### 2d. How the non-smooth CCF family ends below lam_2 (2026-11-20): a cusp at a stagnation point
+`runs/family_end_fingerprint.py` on `sing_track2_v10.pt` (peak 8.7 -> 58.7). Unlike the a-branch (2b), here:
+- the transport speed V = (1+lam) y - U has its MINIMUM at the peak and that minimum tends to zero:
+  V(y*)/((1+lam) y*) = 0.0197, 0.0117, 0.0059, 0.0045, 0.0031 at peak 8.7, 15.0, 30.3, 39.8, 58.7
+  (V* x peak constant within 6 percent);
+- |Omega| decays on BOTH sides of the peak like |y - y*|^(-1/2) (log-slopes -0.52 .. -0.59 between 4 and 32
+  half-widths, inside and outside), and peak^2 x half-width is constant (0.84 .. 0.88): the core is the cut-off
+  of an inverse-square-root cusp, not a pole (peak x half-width -> 0).
+Local solution that matches (mine, formal): near a zero of V in the Burgers form -lam Theta + V Theta' = 0,
+Omega = lam Theta*/V; a symmetric cusp Omega = A |d|^(-1/2) has H Omega antisymmetric of the same strength, so
+V = V* + 2A |d|^(1/2), and consistency gives A^2 = lam Theta*/2, peak = lam Theta*/V*, half-width V*^2/(4A^2),
+peak^2 x half-width = A^2. So the family is heading for a SINGULAR profile with V(y*) = 0 and
+Omega ~ |y - y*|^(-1/2) (the exponent 1/(1-a) of Huang-Tong-Wang at a = -1, but two-sided and with a smooth
+non-zero interior). Quantities should be smooth in V* ~ 1/peak; extrapolating in 1/peak (linear and quadratic,
+windows peak > 20, 28, 35, 45): lam_c = 0.4528 .. 0.4545, mu_c = 2.0009 .. 2.0031, U'(0)_c = 1.2268 .. 1.2275.
+Every fit gives mu_c > 2. So: the family below lam_2 appears to END at a singular cusp profile near
+lam_c = 0.454 with mu_c about 2.002, without passing through a third smooth profile. Still an extrapolation
+(peak 58 is the largest computed); whether the family continues beyond the cusp profile is unknown.
 
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
