@@ -1,6 +1,6 @@
 # Unstable self-similar blow-up profiles of the generalised Constantin-Lax-Majda model: a branch in the advection parameter, a non-smooth family, and a small-|a| limit
 
-DRAFT 1, 2026-11-16. Working note, not submitted anywhere. Every number below was computed in this repository
+DRAFT 1, 2026-11-16 (section 6 revised 2026-11-20). Working note, not submitted anywhere. Every number below was computed in this repository
 (branch `gpu-solver`); the run ledgers are `runs/*.jsonl`, and `STATE.md` records what is trusted and what was
 withdrawn. Tables are produced by `runs/make_note_tables.py`. Items marked [TODO] are not done.
 
@@ -28,8 +28,11 @@ We report:
 4. At a = -1, the one-parameter family of NON-smooth profiles, Omega ~ |y|^(mu-1) sgn(y) at the origin, that
    connects the smooth ones: the exponent mu(lam) between lam_1 and lam_2 and below lam_2 down to
    lam = 0.45454, where the peak of the profile has grown to 58 and our solver stalls. No third smooth profile
-   was found: the family approaches a singular profile with an inverse-square-root cusp at a stagnation point,
-   near lam = 0.454 with mu about 2.002 (extrapolated), before mu returns to 2.
+   was found: the family approaches a singular profile with an inverse-square-root cusp at a stagnation point.
+   The core of the growing peak is the solution of a parameter-free inner equation, v' = H(1/v), whose constant
+   (3.35819) the computed profiles reproduce to four or five digits with nothing fitted; its far field
+   oscillates in the logarithm (frequency 0.649424), which formally makes the family spiral into the singular
+   profile, near lam = 0.4545 with mu about 2.006, without mu returning to 2.
 
 Nothing here is a statement about the Navier-Stokes or Euler equations.
 
@@ -215,17 +218,45 @@ persisting non-smooth signal on [0.455, 0.4713]). We could not continue past lam
 How the peak grows (`runs/family_end_fingerprint.py`). The transport speed V = (1+lam) y - U has its minimum
 at the peak, and that minimum tends to zero in proportion to 1/peak (V at the peak, in units of (1+lam) y*:
 0.0197 at peak 8.7, 0.0059 at 30.3, 0.0031 at 58.7). On both sides of the peak |Omega| decays like
-|y - y*|^(-1/2) (measured exponents -0.52 to -0.59), and peak^2 x half-width is constant (0.84 to 0.88). This is
-the cut-off of a cusp: near a zero of V, (3) gives Omega = lam Theta/V, and a symmetric cusp
-Omega = A |y - y*|^(-1/2) produces V = V* + 2A |y - y*|^(1/2) with A^2 = lam Theta(y*)/2, hence
-peak = lam Theta(y*)/V* and peak^2 x half-width = A^2. The family is therefore approaching a singular profile
-with a stagnation point V(y*) = 0 and an inverse-square-root singularity of Omega there.
+|y - y*|^(-1/2). Near a zero of V, (3) gives Omega = lam Theta/V, and a cusp -Omega = A |y - y*|^(-1/2) produces
+V = 2A |y - y*|^(1/2) with A^2 = kappa/2, kappa = lam |Theta(y*)|. The measured amplitude agrees: Omega
+|y - y*|^(1/2) = 0.93 to 0.96 on both sides for 0.03 < |y - y*| < 1, against (kappa/2)^(1/2) = 0.973. The family
+is therefore approaching a singular profile with a stagnation point V(y*) = 0 and an inverse-square-root
+singularity of Omega there.
 
-Extrapolating in 1/peak (linear and quadratic fits, four windows) puts that profile at lam_c = 0.4528 to
-0.4545 with mu_c = 2.0009 to 2.0031; every fit gives mu_c > 2. If this holds, the family ends in the cusp
-profile before becoming smooth again, and a third smooth profile, if it exists, is not on it. This rests on an
-extrapolation from peak 58 and on a formal local argument. [TODO: math check; whether a family continues
-beyond the cusp profile is unknown.]
+The core of the peak (`runs/cusp_inner.py`). In the inner variables y - y* = (V*^2/kappa) xi, V = V* v(xi),
+-Omega = (kappa/V*)/v, the leading-order problem contains no parameter:
+
+    v'(xi) = H(1/v),    v(0) = 1,   v even,   v ~ (2|xi|)^(1/2) at infinity.                    (6)
+
+Its numerical solution reaches v = 2 at xi_h = 3.35819, so (6) predicts, with no fitted constant,
+peak^2 x half-width = 3.35819 kappa. On the family this ratio is 3.351 to 3.356 for peaks between 8.7 and 40, and
+3.35807, 3.35816, 3.3580 at peaks 54.8, 58.7 and 64 (the last three with a finer measurement). The peak is the
+inner solution (6) to four or five digits.
+
+Approach to the singular profile. Linearising (6) about (2|xi|)^(1/2) with a relative correction |xi|^(-s) gives
+2s - 1 = tan(pi/4 + pi s/2), whose relevant roots are s = 1/2 +- i w with 2 w tanh(pi w/2) = 1, w = 0.649424.
+The computed solution of (6) shows exactly this: v - (2 xi)^(1/2) = 0.598 cos(w ln xi + phase) over five decades.
+In the outer variables the correction is V* cos(2 w ln V* + phase). Formally, then, every global quantity q of
+the family should behave like
+
+    q = q_c + sigma [a cos(2 w ln sigma) + b sin(2 w ln sigma)] + O(sigma^2),   sigma = 1/peak,   (7)
+
+so that lam, as a function of the peak, has infinitely many turning points, successive ones at peaks in the
+ratio exp(pi/(2w)) = 11.2 and with amplitudes decreasing by the same factor: the family spirals into the
+singular profile, as in other problems where a branch ends in a singular solution with complex exponents.
+Our lam-continuation stalled because d lam/d(1/peak) decreases steadily (0.107, 0.071, 0.049, 0.037 at peaks
+29, 40, 53, 60): on this reading it was approaching the first turning point. Fits of (7) plus a sigma^2 term
+to the data (`runs/family_spiral_fit.py`) are as good as cubic polynomials for lam and four to six times better
+for mu and y*, but the data cover only half an oscillation, so this does not decide. The fits of (7) put the
+first turning point at peak 85 to 135, lam about 0.4544, and the singular profile at lam_c = 0.4544 to 0.4547,
+mu_c = 2.0060 to 2.0063; mu never comes back to 2 in any fit (spiral or polynomial).
+
+If this holds, the family ends in the cusp profile without becoming smooth again, and a third smooth profile,
+if it exists, is not on it. What is computed: (6), its constant, its far field, and the agreement of the peak
+with it. What is formal: the passage from (6) to (7). What is extrapolated: lam_c and mu_c.
+[TODO: math check of (6) and (7); observe the first turning point directly, run in progress with
+`runs/sing_track3.py`.]
 
 ## 7. What is not claimed
 

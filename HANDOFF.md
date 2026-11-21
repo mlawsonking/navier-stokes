@@ -742,3 +742,21 @@ Questions:
 3. Is the a = 0 statement right: G + (1+lam) z G' - G^2/2 = 0, so the only smooth odd profile at a = 0 is
    the classical one (lam = 0), and a pole pair needs u0 = 2, gamma = 1/2?
 4. The exponent law for the non-smooth CCF family, mu = lam/(1 + lam - U'(0)) (fourth update), still unchecked.
+
+## Builder update 2026-11-20 (sixth): for the math session — the end of the non-smooth CCF family
+Numbers in STATE.md 2d/2e, NOTE.md section 6. Scripts: runs/family_end_fingerprint.py, cusp_inner.py,
+family_spiral_fit.py, sing_track3.py. All computed here; the derivations are formal and unchecked.
+1. Observation (a = -1, family below lam_2): V = (1+lam) y - U has its minimum at the peak of |Omega| and
+   V* = min V -> 0 like 1/peak; -Omega |y - y*|^(1/2) -> 0.93..0.96 on both sides; predicted amplitude
+   A = sqrt(kappa/2) = 0.973, kappa = lam |Theta(y*)|.
+2. Inner problem: y - y* = (V*^2/kappa) xi, V = V* v, -Omega = (kappa/V*)/v:  v' = H(1/v), v(0) = 1, v even,
+   v ~ sqrt(2|xi|). Numerically v(xi_h) = 2 at xi_h = 3.35819. Check without any fit:
+   peak^2 x half-width / kappa = 3.35807, 3.35816, 3.3580 at peaks 54.8, 58.7, 64.
+3. Linearisation at infinity: relative correction |xi|^(-s), 2s - 1 = tan(pi/4 + pi s/2), s = 1/2 +- i w,
+   2 w tanh(pi w/2) = 1, w = 0.649424 (real roots 2.3302, -1.3302). Numerically v - sqrt(2 xi) = 0.598 cos(w ln xi + ph).
+4. Formal consequence: q = q_c + sigma [a cos(2 w ln sigma) + b sin(2 w ln sigma)] + O(sigma^2), sigma = 1/peak, for
+   lam, mu, U'(0), y*: a spiral with turning-point ratio exp(pi/(2w)) = 11.2. Not yet observed directly.
+Questions: (a) is the reduction to v' = H(1/v) right, and is there a closed form (Phi = v' - i/v is the boundary value
+of a function analytic in the upper half plane; Phi ~ e^(-i pi/4) z^(-1/2))? (b) is the step from 3 to 4 legitimate,
+i.e. does the outer linearised problem about the singular profile pick up this mode at order V*? (c) is the singular
+end profile (V(y*) = 0, Omega ~ |y - y*|^(-1/2) two-sided, non-smooth at the origin with mu about 2.006) known?
