@@ -760,3 +760,15 @@ Questions: (a) is the reduction to v' = H(1/v) right, and is there a closed form
 of a function analytic in the upper half plane; Phi ~ e^(-i pi/4) z^(-1/2))? (b) is the step from 3 to 4 legitimate,
 i.e. does the outer linearised problem about the singular profile pick up this mode at order V*? (c) is the singular
 end profile (V(y*) = 0, Omega ~ |y - y*|^(-1/2) two-sided, non-smooth at the origin with mu about 2.006) known?
+
+## Builder update 2026-11-21 (seventh): outcome of the direct test
+
+- Family followed in mu from peak 58 to peak 134.6 (lam 0.454294, mu 2.004965), commit 5de9b2f.
+- FAILED PREDICTION: no turning point of lam between peaks 85 and 135; lam still decreasing at 134.
+- mu is levelling off (d mu / d sigma 0.196, 0.13, 0.058 at peaks 78, 102, 128) toward the minimum near peak 150
+  that spiral fits from peak <= 64 had predicted. Spiral form fits mu and y* better than a cubic, lam equally,
+  U'(0) worse. So: supported by two quantities, not established.
+- Inner constant peak^2 * HW / kappa stays 3.352-3.357 up to peak 125 (inner value 3.35819).
+- DATA QUALITY: above peak 75 the residual floor rises (1e-6 at 76, 2.3e-5 at 134); cause not identified; polish
+  (runs/sing_polish.py) cannot lower it. Those points are 5-digit only. Going further needs a different solver.
+- Nothing running. Open for the math side: questions (a)-(c) of the sixth update still stand.
