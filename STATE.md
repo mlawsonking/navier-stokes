@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-20 evening (ONE GPU job running: `sing_track3.py` tag y3, log `runs/_track3_y3.log`). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-20 night (no jobs running). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -171,9 +171,23 @@ kappa = lam |Theta(y*)|, i.e. 0.947 in y units; the measured value is 6.36. The 
   lam_min = 0.45436 .. 0.45446, mu_c = 2.0060 .. 2.0063 and min mu about 2.005; cubic fits give mu_c = 2.003 .. 2.004.
   In every fit mu stays above 2: no third smooth profile on this family. The 2d values lam_c = 0.4528 .. 0.4545,
   mu_c = 2.001 .. 2.003 came from linear/quadratic fits and are superseded (too low if the spiral is right).
-- Decisive test, RUNNING: follow the family through the predicted turning point. `runs/sing_track3.py` marches in
-  mu (predictor extrapolated in mu, the solve stays at fixed lam; truncated SVD drops the family tangent at a
-  fold) and measures the peak on a local fine grid. About 0.5 peak units per minute; see section 4.
+- Test run 2026-11-20 evening (`sing_track3.py` tags y1..y3, then `sing_polish.py`): family followed from peak 58 to
+  134.6 (lam 0.454294, mu 2.004965). QUALITY: on = off 5e-8 .. 1.3e-7 up to peak 73; above that the solver cannot get
+  below 1e-6 (peak 76), 4e-6 (99), 1.4e-5 (125), 2.3e-5 (134) and Gauss-Newton finds no descent (floor far above the
+  (peak)^4 estimate; cause not identified). Treat peak > 75 as 5-digit data. The inner-constant check still holds
+  there: peak^2 x half-width / kappa = 3.3569, 3.3571, 3.3558, 3.3536, 3.3524 at peaks 76, 89, 99, 112, 125.
+- Outcome: (i) the turning point of lam that the first spiral fits put at peak 85 .. 135 was NOT seen: lam is still
+  falling at peak 134, d lam/d(1/peak) levelling near 0.021. That prediction failed; with the new points the fitted
+  position of the first lam turning point is not stable (106 .. 4500 depending on window and model).
+  (ii) mu is levelling off: d mu/d(1/peak) = 0.196, 0.13, 0.058 at peaks 78, 102, 128, heading for a minimum near
+  peak 150, where the earlier spiral fits had put it (min mu 2.0050 at peak 131 .. 144, predicted from peak <= 64).
+  (iii) refit with all points, peak > 30: for mu the 3-parameter spiral (rms 3.8e-6) and spiral + sigma^2 (1.7e-6) beat
+  the 4-parameter cubic (1.6e-5); for y* spiral + sigma^2 is 4 times better; for lam they are equal (2.5e-6 vs 4e-6);
+  for U'(0) the cubic is better (2.5e-7 vs 1.4e-6). All fits: mu_c = 2.0050 .. 2.0061, lam_c = 0.4542 .. 0.4547,
+  mu never 2.
+  So: inner structure CONFIRMED (computed, no fit); log-periodic approach SUPPORTED by mu and y*, not shown by lam;
+  no turning point of lam observed. Going further needs a solver whose floor does not grow like this (ideas: unknowns
+  for peak position/width instead of coefficients; solve the outer singular problem with the inner solution built in).
 
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing

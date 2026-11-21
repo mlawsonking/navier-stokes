@@ -221,7 +221,7 @@ def remap0(p, old_map, new_map, shape, device):
     return q
 
 
-def tsvd_gn(resjac, resid, p0, idx, max_iter=25, rc=1e-9, tol=1e-14, verbose=False, svd=True, rc0=1e-6):
+def tsvd_gn(resjac, resid, p0, idx, max_iter=25, rc=1e-9, tol=1e-14, verbose=False, svd=True, rc0=1e-6, floor=1e-6):
     """Gauss-Newton with a truncated-SVD pseudo-inverse of the column-scaled Jacobian and step halving.
     The Jacobian is numerically rank-deficient here (about 30 singular values below 1e-12 near mu = 2);
     damping (LM) crawls, while discarding those directions converges quadratically.
@@ -254,9 +254,9 @@ def tsvd_gn(resjac, resid, p0, idx, max_iter=25, rc=1e-9, tol=1e-14, verbose=Fal
         hist.append((it, r.abs().max().item(), r.norm().item(), t, int(keep.sum())))
         if verbose:
             print(f"  gn {it} sup {hist[-1][1]:.2e} t {t:.3f} rank {hist[-1][4]} cut {cut:.0e}", flush=True)
-        if hist[-1][1] < tol or (gain < 0.3 and cut <= rc * 1.0001 and hist[-1][1] < 1e-6):
+        if hist[-1][1] < tol or (gain < 0.3 and cut <= rc * 1.0001 and hist[-1][1] < floor):
             break
-        if len(hist) > 2 and hist[-1][3] < 0.2 and hist[-2][3] < 0.2 and hist[-1][1] > 1e-6:
+        if len(hist) > 2 and hist[-1][3] < 0.2 and hist[-2][3] < 0.2 and hist[-1][1] > max(1e-6, 100 * floor):
             break                               # two heavily damped steps far from convergence: start is too far
     return p, hist
 

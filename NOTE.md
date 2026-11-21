@@ -255,8 +255,16 @@ mu_c = 2.0060 to 2.0063; mu never comes back to 2 in any fit (spiral or polynomi
 If this holds, the family ends in the cusp profile without becoming smooth again, and a third smooth profile,
 if it exists, is not on it. What is computed: (6), its constant, its far field, and the agreement of the peak
 with it. What is formal: the passage from (6) to (7). What is extrapolated: lam_c and mu_c.
-[TODO: math check of (6) and (7); observe the first turning point directly, run in progress with
-`runs/sing_track3.py`.]
+
+Direct test (`runs/sing_track3.py`, marching in mu). The family was followed from peak 58 to peak 134
+(lam = 0.454294, mu = 2.004965). Above peak 75 the residual cannot be brought below 1e-6 to 2e-5, so those points
+are five-digit data. Result: lam is still decreasing at peak 134 and no turning point of lam was seen (the first
+fits had suggested one between 85 and 135; that did not happen). mu, on the other hand, is levelling off towards a
+minimum near peak 150 and mu = 2.0050, where the fits of (7) made from peaks below 64 had put it; and with all
+points (peak > 30) the three-parameter form (7) fits mu four times better than a four-parameter cubic. The ratio
+peak^2 x half-width / kappa stays at 3.352 to 3.357 up to peak 125. So the inner structure is confirmed, the
+logarithmic oscillation is supported by mu and y* but not yet by lam, and the end point is lam_c = 0.4542 to
+0.4547, mu_c = 2.0050 to 2.0061. [TODO: math check of (6) and (7); a solver that stays accurate beyond peak 75.]
 
 ## 7. What is not claimed
 
