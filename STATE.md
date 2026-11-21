@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-20 (no jobs running). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-20 evening (ONE GPU job running: `sing_track3.py` tag y3, log `runs/_track3_y3.log`). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -143,6 +143,38 @@ Every fit gives mu_c > 2. So: the family below lam_2 appears to END at a singula
 lam_c = 0.454 with mu_c about 2.002, without passing through a third smooth profile. Still an extrapolation
 (peak 58 is the largest computed); whether the family continues beyond the cusp profile is unknown.
 
+### 2e. The cusp core is a universal inner solution; the family should approach its end in a SPIRAL (2026-11-20, later)
+Correction to 2d first: the naive cut-off V = V* + 2A|d|^(1/2) gives peak^2 x half-width = A^2 = kappa/2 with
+kappa = lam |Theta(y*)|, i.e. 0.947 in y units; the measured value is 6.36. The OUTER amplitude is right
+(Omega sqrt|d| = 0.93 .. 0.96 on both sides for 0.03 < |d| < 1, against sqrt(kappa/2) = 0.973), the core is not.
+- Inner problem (mine, formal). With y - y* = (V*^2/kappa) xi, V = V* v(xi), -Omega = (kappa/V*)/v, the leading
+  order of Omega = lam Theta/V, V' = (1+lam) - H Omega is parameter-free:
+      v'(xi) = H(1/v),  v(0) = 1,  v even,  v ~ sqrt(2|xi|).
+  `runs/cusp_inner.py` solves it (Newton, exponential grid, explicit far-field pair subtracted): v = 2 at
+  xi_h = 3.35819 (3.35803 on the coarser grid). Prediction with NO fitted constant: peak^2 x half-width = kappa xi_h.
+  Measured on the family (fine local grid, `sing_track3.py`): ratio 3.35807 at peak 54.8, 3.35816 at peak 58.7,
+  3.3580 at peak 64; with the coarser re-measurement of `family_spiral_fit.py` 3.351 .. 3.356 for peak 8.7 .. 40.
+  So the core of the peak IS this inner solution, to 4-5 digits at the largest peaks.
+- Far field of the inner solution: linearising about sqrt(2|xi|) with relative correction |xi|^(-s) gives
+  2s - 1 = tan(pi/4 + pi s/2): roots s = 1/2 +- i w with 2 w tanh(pi w/2) = 1, w = 0.649424, and real 2.3302, -1.3302.
+  Numerically v - sqrt(2 xi) = 0.598 cos(w ln xi + phase) for 1e2 < xi < 1e7 (fit rms 0.5 percent of the amplitude;
+  a constant + xi^(-1/2) fit is 100 times worse).
+- Consequence (formal, the standard picture for a family ending in a singular solution with complex exponents):
+  in outer variables the correction is V* cos(2 w ln V* + phase), so every global quantity should behave as
+      q = q_c + sigma [a cos(2 w ln sigma) + b sin(2 w ln sigma)] + O(sigma^2),   sigma = 1/peak,
+  i.e. lam(sigma) has INFINITELY MANY turning points, successive ones at peaks in the ratio exp(pi/(2w)) = 11.2,
+  each 11.2 times smaller. The stall of `sing_track2.py` near lam = 0.4545 is then the approach to the first
+  turning point: d lam / d(1/peak) falls steadily, 0.107 at peak 29, 0.071 at 40, 0.049 at 53, 0.037 at 60.
+- Fits (`runs/family_spiral_fit.py`, 4 parameters each, peak > 20): spiral + sigma^2 against a cubic in sigma: same
+  rms for lam (1.5e-6 vs 5e-7), 6 times better for mu (1.9e-6 vs 1.1e-5), 4 times better for y*. NOT decisive: the
+  data cover about half an oscillation. Spiral fits put the first turning point at peak 85 .. 135 with
+  lam_min = 0.45436 .. 0.45446, mu_c = 2.0060 .. 2.0063 and min mu about 2.005; cubic fits give mu_c = 2.003 .. 2.004.
+  In every fit mu stays above 2: no third smooth profile on this family. The 2d values lam_c = 0.4528 .. 0.4545,
+  mu_c = 2.001 .. 2.003 came from linear/quadratic fits and are superseded (too low if the spiral is right).
+- Decisive test, RUNNING: follow the family through the predicted turning point. `runs/sing_track3.py` marches in
+  mu (predictor extrapolated in mu, the solve stays at fixed lam; truncated SVD drops the family tangent at a
+  fold) and measures the peak on a local fine grid. About 0.5 peak units per minute; see section 4.
+
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
   Lorentzian: height 42 -> 225 for a = -0.126 -> -0.071, position y* 1.28 -> 0.47, height x FWHM / y*
@@ -196,6 +228,13 @@ Tried and failed at mu = 2.007 (do not repeat without a new idea): `runs/sing_mu
 lam unknown: Newton diverges even for d mu = 1e-4) and `sing_pin2.py` straight from mu = 2.007 (start
 residual 0.2). At this peak sharpness Gauss-Newton only converges from the 3-point predictor of the lam-march.
 `sing_smooth.py` and `sing_to_smooth.py` are the older "box"-grid versions (fine for lam_2, not for lam_3).
+
+Family beyond the stall of `sing_track2` (marches in mu; resume from the newest `runs/sing_track3_y*.pt`):
+
+    ACCEPT=1e-6 .venv/Scripts/python -u runs/sing_track3.py runs/sing_track3_y3.pt y4 0.00015 200
+
+(ACCEPT is relative to (peak/58)^4; the Newton basin is about 4e-5 in mu, i.e. half a peak unit per step.)
+Then `runs/family_spiral_fit.py runs/sing_track2_v10.pt runs/sing_track3_y3.pt` and `runs/cusp_inner.py 0.02`.
 
 First unstable branch in a (CPU, seconds per step):
 
