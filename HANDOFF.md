@@ -793,3 +793,14 @@ end profile (V(y*) = 0, Omega ~ |y - y*|^(-1/2) two-sided, non-smooth at the ori
   (P1) next turning point of mu: a MAXIMUM at peak 1700 +- 100 (= 152.8 x 11.2), value 2.00583 .. 2.00586.
   (P2) next turning point of y*: a maximum at peak 500 .. 560 (= 49.0 x 11.2 = 549), value 7.2465 .. 7.2488.
   (P3) lam: no stable prediction. If the spiral is right lam must turn somewhere; fits say anywhere from 300 to 1900.
+
+### 2026-11-21, later (run w2 at peak 638)
+- P2 CONFIRMED: y* maximum 7.2479112 at peak 558.8 (predicted: peak 500..560, value 7.2465..7.2488). Ratio to the
+  previous turning point (minimum at peak 48.97): 11.41; inner-problem value exp(pi/(2w)) = 11.23.
+- mu: pure 3-parameter spiral (fixed w) fitted on peak 30..200 predicts peak 200..638 with rms 8e-7, max 2.1e-6
+  (mu moves by 7e-4 over that range); cubic 3.5e-4.
+- lam still has no turning point, and neither spiral nor polynomial describes it. d lam/d ln(peak) = -2.0e-4 (peak 120),
+  -3.2e-4 (peak 290..350, its extreme), -2.8e-4 (peak 620).
+- P3 registered now (run at peak 638): lam has a MINIMUM at peak 1700 .. 2600, value 0.45380 .. 0.45386.
+  (Reasoning: d lam/d ln peak = sigma R cos(2 w ln sigma + phase) has its extreme near peak 350..600; a quarter period
+  later is a factor exp(pi/(4w)) = 3.35 in peak.)
