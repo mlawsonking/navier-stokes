@@ -21,6 +21,9 @@ from .ccf import cheb3, DT
 from . import ccf_fast as F
 
 
+ACCURATE_KERNEL = True     # False reproduces the kernel used before 2026-11-21 (differences of node values)
+
+
 class EGrid:
     """Sources y' = exp(xi(tau_j)), tau_j = j h; collocation at the half-steps. cluster = (xi_p, w, A) uses
     xi(tau) = tau - A atan((tau - tau_p)/w): analytic, and denser by 1/(1 - A/w) around xi_p (the peak), so the
@@ -43,8 +46,23 @@ class EGrid:
                 for _ in range(80):
                     x = x - (tau_of(x) - tau) / (1 + D * e / torch.sqrt(e * e + (x - xp) ** 2))
                 return x
-            xs = inv(ta + h * torch.arange(nJ + 1, dtype=DT, device=device))
-            xc = inv(ta + h * (torch.arange(i0, i1 + 1, dtype=DT, device=device) + 0.5))
+            if D > 0:
+                # Solve for u = (xi - xp)/e instead of xi (2026-11-21): near a sharp peak neighbouring nodes differ by
+                # 1e-7 relative, so y^2 - y'^2 formed from the node values loses 9-10 digits; that rounding noise in
+                # the kernel, times Omega at the peak, was the residual floor (4e-7 at peak 134, growing like peak^3).
+                # With u the differences xi - xi' = e (u - u') are accurate and the kernel is built from expm1.
+                def inv_u(tau):
+                    dt = tau - xp; a = dt.abs()
+                    u = torch.sign(dt) * torch.minimum(a / e, torch.sinh((a / (D * e)).clamp(max=700.0)))
+                    for _ in range(80):
+                        u = u - (e * u + D * e * torch.asinh(u) - dt) / (e + D * e / torch.sqrt(1 + u * u))
+                    return u
+                us = inv_u(ta + h * torch.arange(nJ + 1, dtype=DT, device=device))
+                uc = inv_u(ta + h * (torch.arange(i0, i1 + 1, dtype=DT, device=device) + 0.5))
+                xs, xc = xp + e * us, xp + e * uc; self._du = (uc, us, e)
+            else:
+                xs = inv(ta + h * torch.arange(nJ + 1, dtype=DT, device=device))
+                xc = inv(ta + h * (torch.arange(i0, i1 + 1, dtype=DT, device=device) + 0.5))
             self.ys = torch.exp(xs); self.w = h * self.ys / (1 + D * e / torch.sqrt(e * e + (xs - xp) ** 2))
             self.y = torch.exp(xc)
         else:
@@ -69,7 +87,10 @@ class EGrid:
             self.w = h * dxi(tau) * self.ys
             i = torch.arange(-int(round(Lc0 / h)), int(round(Lc / h)), dtype=DT, device=device)
             self.y = torch.exp(xi(h * (i + 0.5)))
-        self.K = self.w[None, :] / (self.y[:, None] ** 2 - self.ys[None, :] ** 2)
+        if getattr(self, "_du", None) is not None and ACCURATE_KERNEL:
+            uc, us, e = self._du; self.K = self.w[None, :] / (self.ys[None, :] ** 2 * torch.expm1(2 * e * (uc[:, None] - us[None, :])))
+        else:
+            self.K = self.w[None, :] / (self.y[:, None] ** 2 - self.ys[None, :] ** 2)
         self.Y = self.ys[-1]
         g, gw = np.polynomial.legendre.leggauss(n_gl)
         self.g = torch.tensor((g + 1) / 2, dtype=DT, device=device)
