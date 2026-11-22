@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-21 (see 2f; check `runs/_track4_w2.log` for whether the march is still running). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-21 23:20 (PAUSED, no jobs running; resume command at the end of 2f). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -215,7 +215,17 @@ READ THIS BEFORE USING ANY sing_track3 NUMBER ABOVE PEAK 75: those were off by u
   mu over one half-period (one predicted turning point seen); NOT for lam.
 - Predictions registered in commit adc1276, before the data: (P1) mu maximum at peak 1700 +- 100, value
   2.00583 .. 2.00586; (P2) y* maximum at peak 500 .. 560, value 7.2465 .. 7.2488; (P3) lam: no stable prediction.
-  OUTCOME: [fill in from runs/_track4_w2.log]
+  (P3, registered at peak 638 in commit 9a-series, see HANDOFF) lam MINIMUM at peak 1700 .. 2600, 0.45380 .. 0.45386.
+  OUTCOME so far (PAUSED 2026-11-21 23:20 at Michael's request, march stopped at peak 1236, nothing running):
+  P2 CONFIRMED: y* maximum 7.2479112 at peak 558.8 (ratio to the minimum at 48.97: 11.41; theory 11.23).
+  P1 not reached yet: mu = 2.005825 at peak 1236 and still rising, increments shrinking (5.5e-6, 4.9e-6, 4.4e-6,
+  3.8e-6 per 4 percent step). P3 not reached: lam = 0.453698 at peak 1236, still falling (-6.4e-6 per step).
+  mu: pure spiral fitted on peak 30..200 predicts peak 200..638 with rms 8e-7 (cubic 3.5e-4).
+  Accuracy: on = off 1e-9 .. 1e-8 up to peak 500, 1e-7 at peak 1000..1236 (rounding in the basis argument
+  (x - x0)/eps, not resolution: n0 = 1536 gives the same lam, mu to 1e-9 at peak 1016). FWHM / pk2HW printed by
+  sing_track4 is only good to ~0.3 percent (coarse half-maximum search): do NOT use it for the inner constant.
+  RESUME: ACCEPT=1e-6 .venv/Scripts/python -u runs/sing_track4.py march runs/sing_track4_w3.pt w4 1.04 30
+  (data: sing_track4_w3.pt holds everything from peak 70 to 1236; ledger cases sing-track4-w1, -w2, -w3).
 
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
