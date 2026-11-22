@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-20 night (no jobs running). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-21 (see 2f; check `runs/_track4_w2.log` for whether the march is still running). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -189,6 +189,34 @@ kappa = lam |Theta(y*)|, i.e. 0.947 in y units; the measured value is 6.36. The 
   no turning point of lam observed. Going further needs a solver whose floor does not grow like this (ideas: unknowns
   for peak position/width instead of coefficients; solve the outer singular problem with the inner solution built in).
 
+### 2f. The "solver floor" was three bugs; mu turning point observed; predictions registered (2026-11-21)
+READ THIS BEFORE USING ANY sing_track3 NUMBER ABOVE PEAK 75: those were off by up to 5e-6 in lam.
+- Diagnosis (`runs/floor_diag.py` .. `floor_diag6.py`, `kernel_test.py`, `rows_test.py`). The residual of the
+  sing_track3 states lay in the RANGE of the Jacobian (|P r|/|r| = 0.9999): not a representation limit. Causes:
+  (1) fixed-lam solve at an extrapolated lam off by ~5e-6; at fixed lam that needs a several-percent move along the
+      family, and with cutoff 1e-9 the truncated SVD kept junk directions whose steps are far outside the linear range.
+      Also: a change of lam at fixed map slides the basis across the peak (d ln y/d lam = ln y/(1+lam) at fixed s).
+  (2) rounding in y^2 - y'^2 for neighbouring quadrature nodes (relative spacing 1e-7): noise ~ peak^3 in the residual.
+  (3) the origin amplitude row fixes the scaling y -> a y, Theta -> a Theta; correcting it by 1e-6 means sliding the
+      peak a whole width. Its residual grew from 5e-12 (peak 70) to 2.7e-6 (peak 199) and dragged mu by 2e-6.
+- Fix: `runs/sing_track4.py` (peak height pinned, lam AND mu free, map centre follows lam, scale fixed by "the peak is
+  at y_g", exact rescaling to the standard normalisation afterwards; ladder of SVD cutoffs, best actual residual wins)
+  and `ccf_sing.EGrid` kernel from expm1 of accurate node differences (`ACCURATE_KERNEL`). Result: on = off
+  1e-9 .. 5e-9 from peak 70 to at least 237 (was 1e-6 .. 2e-5). lam, mu at peak 134 agree to 1e-8 across
+  n0 = 1024/1536, EPSF 0.25..2, ROWS 6/10 (before fixes 2-3; not yet repeated after them: TODO).
+  Data: `runs/sing_track4_w1.pt` (re-solved, peak 70..189), `runs/sing_track4_w2.pt` (march onward), ledger cases
+  `sing-track4-w1`, `sing-track4-w2`. `y_peak` in those ledger rows is in the STANDARD normalisation.
+- OBSERVED turning points: mu maximum 2.013431 at peak 17.0; mu MINIMUM 2.00494649 at peak 152.8 (then rising:
+  2.005100 at peak 237); y* minimum 7.188906 at peak 49.0. lam: none up to peak 237; d lam/d sigma fell to about 0.02
+  near peak 100 and rises again (0.030 .. 0.047 over peaks 141 .. 185).
+- Test with the frequency FIXED at the inner value w = 0.649424 (`runs/family_spiral_fit2.py w1 w2`): the 3-parameter
+  spiral fitted on peak 30..100 predicts mu on peak 100..189 with rms 9e-6 (quadratic 6e-4, cubic 2e-4).
+  For lam the pure spiral FAILS out of sample (2.4e-4, polynomials 7e-5). So: log-periodic approach established for
+  mu over one half-period (one predicted turning point seen); NOT for lam.
+- Predictions registered in commit adc1276, before the data: (P1) mu maximum at peak 1700 +- 100, value
+  2.00583 .. 2.00586; (P2) y* maximum at peak 500 .. 560, value 7.2465 .. 7.2488; (P3) lam: no stable prediction.
+  OUTCOME: [fill in from runs/_track4_w2.log]
+
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
   Lorentzian: height 42 -> 225 for a = -0.126 -> -0.071, position y* 1.28 -> 0.47, height x FWHM / y*
@@ -243,7 +271,14 @@ lam unknown: Newton diverges even for d mu = 1e-4) and `sing_pin2.py` straight f
 residual 0.2). At this peak sharpness Gauss-Newton only converges from the 3-point predictor of the lam-march.
 `sing_smooth.py` and `sing_to_smooth.py` are the older "box"-grid versions (fine for lam_2, not for lam_3).
 
-Family beyond the stall of `sing_track2` (marches in mu; resume from the newest `runs/sing_track3_y*.pt`):
+CURRENT tracker for the family at large peak (2026-11-21; about 2.5 min per 6 percent step in peak, 16 GB GPU):
+
+    ACCEPT=1e-7 .venv/Scripts/python -u runs/sing_track4.py march runs/sing_track4_w2.pt w3 1.06 70
+    .venv/Scripts/python runs/family_spiral_fit2.py w1 w2 w3        (ledger only, no GPU)
+
+(`polish SRC.pt tag peak_min` re-solves stored states. Do not use `sing_track3.py` above peak 75: see 2f.)
+
+SUPERSEDED above peak 75 (kept for the record): family beyond the stall of `sing_track2`, marching in mu:
 
     ACCEPT=1e-6 .venv/Scripts/python -u runs/sing_track3.py runs/sing_track3_y3.pt y4 0.00015 200
 
@@ -291,6 +326,16 @@ forgotten second tracker slowed everything for an hour).
     sharpening peak. Check the printed `eps` is not sitting on its floor.
 11. With a very sharp peak the truncated-SVD step is only reliable from an excellent predictor; a looser
     cutoff (1e-6) is more robust but stalls at 1e-6. `tsvd_gn` starts at `rc0` and tightens to `rc`.
+
+13. A residual that will not go down is not automatically a resolution floor. Project it on the range of the
+    Jacobian first (`runs/floor_diag5.py`): if |P r|/|r| is near 1 the solver, not the basis, is at fault (2f).
+14. Never hold a parameter fixed at an EXTRAPOLATED value when the solution is sharp: pin a quantity that is
+    monotone along the family (peak height) and free both parameters. And keep the basis centred on the peak when a
+    parameter that enters the coordinate map changes.
+15. A normalisation row far from the sharp feature (origin amplitude) is a lever arm on the feature's position:
+    fix the scale AT the feature and rescale afterwards.
+16. `measure` on a 120001-point grid leaves ~6 GB cached on the GPU; without chunking + `empty_cache` the next
+    solve spills into shared memory and runs 20x slower with no error (2f).
 
 ## 6. Open items, in order (superseded where section 7 lists a TODO)
 1. lam_3: continue the family; pin; verify at two or more resolutions with on = off; smooth-only refit.
