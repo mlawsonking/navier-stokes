@@ -772,3 +772,24 @@ end profile (V(y*) = 0, Omega ~ |y - y*|^(-1/2) two-sided, non-smooth at the ori
 - DATA QUALITY: above peak 75 the residual floor rises (1e-6 at 76, 2.3e-5 at 134); cause not identified; polish
   (runs/sing_polish.py) cannot lower it. Those points are 5-digit only. Going further needs a different solver.
 - Nothing running. Open for the math side: questions (a)-(c) of the sixth update still stand.
+
+## Builder update 2026-11-21 (eighth): the "solver floor" was three bugs; mu turning point OBSERVED; predictions registered BEFORE the data
+
+- The floor above peak 75 was not a resolution limit (runs/floor_diag*.py, kernel_test.py, rows_test.py):
+  (1) fixed-lam solve at an extrapolated lam that was off by ~5e-6, with an SVD cutoff that let junk directions in;
+  (2) rounding in y^2 - y'^2 for neighbouring quadrature nodes; (3) the origin amplitude row fixing the scale y -> a y
+  against a peak that would have to slide a whole width. runs/sing_track4.py: peak height pinned, lam AND mu free, map
+  centre follows lam, scale fixed at the peak (exact rescaling afterwards), kernel from expm1. Residual at peak 199:
+  4e-9 on = off (was 2.7e-6; 2.3e-5 at peak 134 before). All points from peak 70 re-solved (tag w1): 1e-9 .. 4e-9.
+  CORRECTION: the sing_track3 values above peak 75 were off by up to 5e-6 in lam (peak 134: 0.454294 -> 0.454289417).
+- OBSERVED: mu has a MINIMUM 2.00494649 at peak 152.8 and rises again (2.004990 at peak 189). Earlier maximum:
+  2.013431 at peak 17.0. y* (standard normalisation) has a minimum 7.188906 at peak 49.0. lam has no turning point up
+  to peak 189; d lam/d sigma fell to ~0.02 near peak 100 and is RISING again (0.030, 0.035, 0.041, 0.047 at peaks
+  141, 156, 172, 185).
+- Out-of-sample test, frequency FIXED at w = 0.649424 (runs/family_spiral_fit2.py): 3-parameter spiral fitted on peak
+  30..100 predicts mu on peak 100..189 with rms 9e-6; quadratic 6e-4, cubic 2e-4. For lam the pure spiral FAILS
+  (2.4e-4; polynomials 7e-5): lam is not in the asymptotic regime, or the picture is incomplete for lam.
+- PREDICTIONS registered now, before the run (tag w2, marching to peak ~1e4 if it holds) reaches them:
+  (P1) next turning point of mu: a MAXIMUM at peak 1700 +- 100 (= 152.8 x 11.2), value 2.00583 .. 2.00586.
+  (P2) next turning point of y*: a maximum at peak 500 .. 560 (= 49.0 x 11.2 = 549), value 7.2465 .. 7.2488.
+  (P3) lam: no stable prediction. If the spiral is right lam must turn somewhere; fits say anywhere from 300 to 1900.
