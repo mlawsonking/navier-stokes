@@ -21,6 +21,7 @@ from .ccf import cheb3, DT
 from . import ccf_fast as F
 
 
+CENTER = None              # y of the peak when the N_0 map is centred on it (set by runs/sing_track4.py); None = old behaviour
 ACCURATE_KERNEL = True     # False reproduces the kernel used before 2026-11-21 (differences of node values)
 
 
@@ -57,14 +58,24 @@ class EGrid:
                     for _ in range(80):
                         u = u - (e * u + D * e * torch.asinh(u) - dt) / (e + D * e / torch.sqrt(1 + u * u))
                     return u
-                us = inv_u(ta + h * torch.arange(nJ + 1, dtype=DT, device=device))
-                uc = inv_u(ta + h * (torch.arange(i0, i1 + 1, dtype=DT, device=device) + 0.5))
+                # tau - xp formed as h (j - j_p), not (ta + h j) - xp: the latter rounds at 1e-14, i.e. 1e-12 of the
+                # node spacing in u. And the weight uses u directly: (xs - xp) recomputed from xs loses 9 digits of
+                # (xi - xp)/e at eps ~ 1e-7, which put 1e-10 relative noise on the weights (the floor above peak 1000).
+                jp = (xp - ta) / h
+                def inv_u(dt):
+                    a = dt.abs()
+                    u = torch.sign(dt) * torch.minimum(a / e, torch.sinh((a / (D * e)).clamp(max=700.0)))
+                    for _ in range(80):
+                        u = u - (e * u + D * e * torch.asinh(u) - dt) / (e + D * e / torch.sqrt(1 + u * u))
+                    return u
+                us = inv_u(h * (torch.arange(nJ + 1, dtype=DT, device=device) - jp))
+                uc = inv_u(h * (torch.arange(i0, i1 + 1, dtype=DT, device=device) + 0.5 - jp))
                 xs, xc = xp + e * us, xp + e * uc; self._du = (uc, us, e)
             else:
                 xs = inv(ta + h * torch.arange(nJ + 1, dtype=DT, device=device))
                 xc = inv(ta + h * (torch.arange(i0, i1 + 1, dtype=DT, device=device) + 0.5))
-            self.ys = torch.exp(xs); self.w = h * self.ys / (1 + D * e / torch.sqrt(e * e + (xs - xp) ** 2))
-            self.y = torch.exp(xc)
+            self.ys = torch.exp(xs); self.y = torch.exp(xc)
+            self.w = h * self.ys / (1 + D / torch.sqrt(1 + us * us)) if D > 0 else h * self.ys / (1 + D * e / torch.sqrt(e * e + (xs - xp) ** 2))
         else:
             if cluster is None:
                 xi = lambda t: t; dxi = lambda t: torch.ones_like(t)
@@ -130,7 +141,13 @@ def _fields(lam, mu, y, shape):
     alpha = 1.0 / (1.0 + lam); beta = (1 - alpha) / 2
     l = torch.log1p(y * y)
     s = torch.exp(-alpha / 2 * l); oms = -torch.expm1(-alpha / 2 * l)
-    E, E1 = E2(s, oms, mu, shape)
+    if CENTER is not None and F.MAP is not None:
+        # x - x0 = 2 (s - s_g) formed from y - y_g (exact for nearby doubles) instead of from the rounded s:
+        # with eps ~ 5e-7 (peak 1000) the rounding of s was 1e-10 of the map width, i.e. 1e-7 noise in Omega.
+        # The map centre is then exactly y = CENTER (x0 is used only through s_g = (1 + x0)/2).
+        dl = torch.log1p((y - CENTER) * (y + CENTER) / (1 + CENTER * CENTER))
+        F.U_ACC = (1 + F.MAP[0]) * torch.expm1(-alpha / 2 * dl)
+    E, E1 = E2(s, oms, mu, shape); F.U_ACC = None
     Q = 2 * beta * E - alpha * s[:, None] * E1
     rb = torch.exp(beta * l)
     BTh = rb[:, None] * E

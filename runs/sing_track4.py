@@ -34,6 +34,9 @@ def measure(p, mp):
     for _ in range(8):
         yl = torch.linspace(y0 - w, y0 + w, 20001, dtype=S.DT, device=DEV); Om = om_at(p, yl).abs(); i = Om.argmax()
         y0, pk = yl[i].item(), Om[i].item(); hw = (Om > pk / 2).nonzero().flatten(); a, b = yl[hw[0]].item(), yl[hw[-1]].item()
+        if hw[0] > 0 and hw[-1] < 20000:           # half-maximum crossings by linear interpolation (was: nearest grid point, 0.3 percent)
+            i0, i1 = hw[0].item(), hw[-1].item(); a = yl[i0 - 1].item() + (yl[i0] - yl[i0 - 1]).item() * (pk / 2 - Om[i0 - 1].item()) / (Om[i0] - Om[i0 - 1]).item()
+            b = yl[i1].item() + (yl[i1 + 1] - yl[i1]).item() * (Om[i1].item() - pk / 2) / (Om[i1] - Om[i1 + 1]).item()
         if hw[0] > 0 and hw[-1] < 20000 and hw.numel() > 400: break
         w = 4 * (b - a) if (hw[0] > 0 and hw[-1] < 20000) else 4 * w
     yl = torch.linspace(y0 - (b - a) / 50, y0 + (b - a) / 50, 20001, dtype=S.DT, device=DEV); Om = om_at(p, yl).abs(); i = Om.argmax()
@@ -58,6 +61,7 @@ def solve(guess, cur, yg, target, fw, max_iter=14, tol=2e-9, verbose=True):
     # half-width at peak 134), which made the lam direction violently nonlinear
     mapof = lambda lam: (2 * (1 + yg * yg) ** (-0.5 / (1 + float(lam))) - 1, cur[1])
     guess = S.remap0(guess, cur, mapof(guess[0]), shape, DEV); cur0 = cur
+    S.CENTER = yg            # stays set for the measurement and the off-grid check of this state
     F.MAP = cur0; G = S.peak_grid(guess[0].item(), yg, cur0, n0, h=h, R=RR, device=DEV); ygt = torch.tensor([yg, yg + dl, yg - dl], dtype=S.DT, device=DEV)
 
     def resid(p):
@@ -115,19 +119,19 @@ def record(q, own, yq, pk, fwy, sup, off, its, fn, base):
     lam, mu = q[0].item(), q[1].item(); u0 = (1 + lam) - lam / mu; c = q[2:2 + n0].abs(); a = standard(q, own); ystd = a * yq
     print(f"lam {lam:.9f} mu {mu:.9f} U'(0) {u0:.9f} sup {sup:.1e} OFF {off:.1e} its {its} peak {pk:.3f}@{ystd:.7f} (scale {a:.8f}) FWHM {fwy:.4e} pk2HW {pk*pk*fwy/2:.4f} eps {own[1]:.2e} c_mid {c[n0//2-2:n0//2+1].max().item():.0e} c_last {c[-3:].max().item():.0e} t={time.time()-t0:.0f}s", flush=True)
     out.write(json.dumps(dict(case="sing-track4-" + tag, lam=lam, mu=mu, up0=u0, shape=list(shape), quad_h=h, res_sup=sup, res_offgrid=off, iters=its, peak=pk, y_peak=ystd, y_peak_raw=yq, scale=a, fwhm=fwy, map=list(own))) + "\n"); out.flush()
-    new.append(dict(lam=lam, p=q.clone().cpu(), map=own, ypk=yq, njJ=(nj, J), peak=pk, fwhm=fwy, off=off, scale=a, ystd=ystd)); torch.save(base + new, fn)
+    new.append(dict(lam=lam, p=q.clone().cpu(), map=own, ypk=yq, njJ=(nj, J), peak=pk, fwhm=fwy, off=off, scale=a, ystd=ystd, center=S.CENTER)); torch.save(base + new, fn)
 
 
 if mode == "polish":
     pmin = float(A[4]); every = int(A[5]) if len(A) > 5 else 1; cnt = 0
     for x in sols[-int(os.environ.get('TAIL', len(sols))):]:
-        p, own, ypk, pk, fwy = align(padto(x["p"].to(DEV)), tuple(x["map"]))
+        S.CENTER = None; p, own, ypk, pk, fwy = align(padto(x["p"].to(DEV)), tuple(x["map"]))
         if pk < pmin: continue
         cnt += 1
         if (cnt - 1) % every: continue
         print(f"  polish lam {p[0].item():.9f} mu {p[1].item():.9f} peak {pk:.3f}", flush=True)
         q, sup, its, mq = solve(p, own, ypk, pk, fwy)
-        q, own2, yq, pk2, fwy = align(q, mq); off = offgrid(q, own2, yq)
+        own2 = mq; pk2, yq, _, _, fwy = measure(q, mq); yq = S.CENTER; off = offgrid(q, own2, yq)    # no remap: the state stays in its solve map
         record(q, own2, yq, pk2, fwy, sup, off, its, f"runs/sing_track4_{tag}.pt", [])
 else:
     ratio, nsteps = float(A[4]), int(A[5]); states = []; lr0 = math.log(ratio); lr = lr0; done = 0
@@ -138,11 +142,13 @@ else:
         wts = [math.prod((s_t - ss[k]) / (ss[i] - ss[k]) for k in range(len(use)) if k != i) for i in range(len(use))]
         guess = sum(w_ * st[0] for w_, st in zip(wts, use))
         cur = (sum(w_ * st[1][0] for w_, st in zip(wts, use)), math.exp(sum(w_ * math.log(st[1][1]) for w_, st in zip(wts, use))))
-        cur = (cur[0], min(max(cur[1], 0.5 * mp[1]), 2 * mp[1])); yg = math.exp(sum(w_ * math.log(st[2]) for w_, st in zip(wts, use))); fg = math.exp(sum(w_ * math.log(st[4]) for w_, st in zip(wts, use)))
+        yg = math.exp(sum(w_ * math.log(st[2]) for w_, st in zip(wts, use))); fg = math.exp(sum(w_ * math.log(st[4]) for w_, st in zip(wts, use)))
+        al_ = 1 / (1 + guess[0].item()); sg_ = (1 + yg * yg) ** (-al_ / 2)
+        cur = (cur[0], EPSF * fg * 2 * al_ * sg_ * yg / (1 + yg * yg))        # map width = predicted FWHM in x = 2s-1
         print(f"  try peak {math.exp(s_t):.3f} predicted lam {guess[0].item():.9f} mu {guess[1].item():.9f} eps {cur[1]:.2e} t={time.time()-t0:.0f}s", flush=True)
         q, sup, its, mq = solve(guess, cur, yg, math.exp(s_t), fg); ok = sup < 1e-5; off = float("nan")
         if ok:
-            q, own, yq, pk, fwy = align(q, mq); off = offgrid(q, own, yq); ok = off < ACC
+            own = mq; pk, yq, _, _, fwy = measure(q, mq); yq = S.CENTER; off = offgrid(q, own, yq); ok = off < ACC
         if not ok:
             lr /= 2; print(f"  rejected (sup {sup:.1e}, off {off:.1e}); log-step -> {lr:.4f}", flush=True)
             if lr < 1e-3: print("stopping: step too small"); break

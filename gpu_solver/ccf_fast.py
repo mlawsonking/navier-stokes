@@ -10,6 +10,7 @@ from torch.func import jvp
 from .ccf import cheb3, Grid, DT
 
 
+U_ACC = None
 MAP = None   # None: plain Chebyshev in x = 2s-1.  (x0, eps): Tee-Trefethen sinh map concentrating points at x0,
              # for a profile with complex singularities near x0 +/- i eps. t(x) is analytic on [-1,1], so the
              # basis T_k(t(2s-1)) is still analytic in s at both ends (origin and far field unchanged).
@@ -42,6 +43,8 @@ def _mapped3(s, n):
     x0, eps = MAP
     a1, a2 = math.asinh((1 - x0) / eps), math.asinh((1 + x0) / eps)
     u = x - x0
+    if U_ACC is not None and U_ACC.shape == x.shape:
+        u = U_ACC                # accurate x - x0 supplied by the caller (ccf_sing.CENTER), see there
     t = 2 * (torch.asinh(u / eps) + a2) / (a1 + a2) - 1
     rt = torch.sqrt(eps * eps + u * u)
     ts = 2 * (2 / (a1 + a2)) / rt                       # dt/ds
