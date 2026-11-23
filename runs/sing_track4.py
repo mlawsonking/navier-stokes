@@ -82,6 +82,7 @@ def solve(guess, cur, yg, target, fw, max_iter=20, tol=2e-9, verbose=True):
 
     tq = time.time(); p = guess.clone(); r, Jm = resjac(p); print(f'    resjac {time.time()-tq:.0f}s rows {G.y.numel()}', flush=True); hist = [r[:-2].abs().max().item()]; stall = 0
     for it in range(max_iter):
+        if not (torch.isfinite(Jm).all() and torch.isfinite(r).all()): break       # LAPACK gesdd hangs on NaN (seen at peak 4369)
         d = Jm.norm(dim=0).clamp_min(1e-300); U, sv, Vh = torch.linalg.svd((Jm / d).cpu(), full_matrices=False); co = U.T @ -r.cpu(); best = None
         for cut in (1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10):
             k = sv > cut * sv[0]; st = (Vh[k].T @ (co[k] / sv[k])).to(DEV) / d

@@ -821,3 +821,16 @@ end profile (V(y*) = 0, Omega ~ |y - y*|^(-1/2) two-sided, non-smooth at the ori
   from y - y_g) the residual is 1e-8 .. 2e-8 on = off at peak 2000 .. 3200. Points of w3/w4 above peak 1000 keep
   their n0 = 1024 values in the ledger; cases sing-track4-v1, -v2, -v3 are the n0 = 1536 ones.
 - A per-iteration cap on the lam/mu move (CAP = 2e-6) was needed above peak 2400 (spurious minima otherwise).
+
+### 2026-11-23, evening (run v4 at peak 5180, n0 = 1536, residual 5e-8)
+- lam still decreasing: 0.453596027 at peak 5180. Its decrement per 3 percent step falls geometrically (6.56, 6.16,
+  5.76, 5.40, 5.06, 4.71 e-7; ratio 0.938, i.e. d lam/d ln peak ~ peak^-2.15): a sigma^2 term dominates lam.
+- `runs/family_amp.py` (q = q_c + sigma(a cos + b sin) + c2 sigma^2 + c3 sigma^3, w fixed, peak >= 300, 54 points):
+  mu: rms 2.7e-8 with the oscillation, 1.2e-6 .. 6e-6 without (quartic / cubic in sigma); amplitude R_mu = 0.154.
+  y*: 3.1e-7 with, 7e-5 .. 1.4e-4 without; R_y = 3.09.  -> oscillation REQUIRED for mu and y*.
+  lam: 4.7e-7 with, 1.3e-6 without (peak >= 1000: 1.5e-8 vs 1.5e-7). R_lam = 0.02 .. 0.10 depending on window and
+  model, c2 = 30 .. 220. -> for lam the oscillation is favoured but small and not pinned down; the regular sigma^2
+  term hides its turning points until 2 c2 sigma < R_lam, i.e. peak of order 1e4.
+- P4 registered now: (a) y* MINIMUM at peak 5900 .. 6400, value 7.24317 .. 7.24325;
+  (b) lam MINIMUM at peak 8300 .. 13000, value 0.453591 .. 0.453593 (weak: fits disagree by 50 percent in position);
+  (c) mu MINIMUM near peak 19650, value 2.005762 (not reachable in this run).
