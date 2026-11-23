@@ -49,7 +49,10 @@ def align(p, mp):
     return S.remap0(p, mp, own, shape, DEV), own, ypk, pk, fwy
 
 
-def solve(guess, cur, yg, target, fw, max_iter=14, tol=2e-9, verbose=True):
+CAP = float(os.environ.get("CAP", 2e-6))
+
+
+def solve(guess, cur, yg, target, fw, max_iter=20, tol=2e-9, verbose=True):
     # Rows: collocation, origin relation, Omega(yg) = -target, Omega(yg + dl) = Omega(yg - dl) (the peak IS at yg).
     # The amplitude row of ccf_sing (Theta ~ -(D/2)|y|^mu) is DROPPED: it fixes the scaling y -> a y, Theta -> a Theta,
     # and correcting it by 1e-6 means sliding the peak by a full width (seen as an amplitude-row residual growing from
@@ -82,7 +85,9 @@ def solve(guess, cur, yg, target, fw, max_iter=14, tol=2e-9, verbose=True):
         d = Jm.norm(dim=0).clamp_min(1e-300); U, sv, Vh = torch.linalg.svd((Jm / d).cpu(), full_matrices=False); co = U.T @ -r.cpu(); best = None
         for cut in (1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10):
             k = sv > cut * sv[0]; st = (Vh[k].T @ (co[k] / sv[k])).to(DEV) / d
-            for t in (1.0,):
+            # cap the move in lam and mu per iteration (CAP, default 2e-6): from an imperfect predictor the first step
+            # otherwise throws lam by ~2e-5 and the iteration settles in a spurious minimum at 1e-5 (seen above peak 2400)
+            for t in (min(1.0, CAP / max(abs(st[0].item()), abs(st[1].item()), 1e-300)),):
                 nn = resid(p + t * st).norm().item()
                 if math.isfinite(nn) and (best is None or nn < best[0]): best = (nn, cut, t, st)
         if best is None or best[0] >= r.norm().item():

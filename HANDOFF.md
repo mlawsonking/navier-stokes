@@ -812,3 +812,12 @@ end profile (V(y*) = 0, Omega ~ |y - y*|^(-1/2) two-sided, non-smooth at the ori
 - lam still falling at peak 2000 (0.453638890; -3.6e-6 per 4 percent step, shrinking by ~5 percent per step).
   P3 (minimum at peak 1700..2600) is open and may well fail on the high side.
 - Residuals on = off 3e-7 .. 5e-7 at peak 1700..2000 (rounding floor ~ peak^2).
+
+### 2026-11-23, afternoon (runs v1..v3, n0 = 1536, peak 2000 -> 3200)
+- P3 FAILED: lam has NO minimum in peak 1700..2600; it is still decreasing at peak 3221 (0.453608752).
+  d lam/d ln(peak): -1.6e-4 (1236), -9.2e-5 (2000), -7.4e-5 (2270), -5.7e-5 (2670), -5.0e-5 (2890), -4.3e-5 (3140).
+- Above peak ~1000 n0 = 1024 is not enough for mu (error 1.2e-7 at peak 2100, 1.5e-7 at 2333; lam unaffected at
+  1e-9). With n0 = 1536 and three more rounding fixes (quadrature weights from u, tau from h (j - j_p), basis argument
+  from y - y_g) the residual is 1e-8 .. 2e-8 on = off at peak 2000 .. 3200. Points of w3/w4 above peak 1000 keep
+  their n0 = 1024 values in the ledger; cases sing-track4-v1, -v2, -v3 are the n0 = 1536 ones.
+- A per-iteration cap on the lam/mu move (CAP = 2e-6) was needed above peak 2400 (spurious minima otherwise).
