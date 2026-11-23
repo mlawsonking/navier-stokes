@@ -804,3 +804,11 @@ end profile (V(y*) = 0, Omega ~ |y - y*|^(-1/2) two-sided, non-smooth at the ori
 - P3 registered now (run at peak 638): lam has a MINIMUM at peak 1700 .. 2600, value 0.45380 .. 0.45386.
   (Reasoning: d lam/d ln peak = sigma R cos(2 w ln sigma + phase) has its extreme near peak 350..600; a quarter period
   later is a factor exp(pi/(4w)) = 3.35 in peak.)
+
+### 2026-11-23 (run w4, peak 1236 -> 2000)
+- P1 CONFIRMED: mu maximum 2.0058397 near peak 1760 (mu = 2.005839651, 2.005839700, 2.005839466, 2.005838971 at peaks
+  1709, 1777, 1848, 1922). Registered: peak 1700 +- 100, value 2.00583 .. 2.00586. Ratio to the minimum at 152.8: 11.5.
+  mu turning points now seen: 17.0 (max), 152.8 (min), ~1760 (max): ratios 9.0, 11.5; inner value 11.23.
+- lam still falling at peak 2000 (0.453638890; -3.6e-6 per 4 percent step, shrinking by ~5 percent per step).
+  P3 (minimum at peak 1700..2600) is open and may well fail on the high side.
+- Residuals on = off 3e-7 .. 5e-7 at peak 1700..2000 (rounding floor ~ peak^2).
