@@ -1,6 +1,6 @@
 # Unstable self-similar blow-up profiles of the generalised Constantin-Lax-Majda model: a branch in the advection parameter, a non-smooth family, and a small-|a| limit
 
-DRAFT 1, 2026-11-16 (section 6 revised 2026-11-20). Working note, not submitted anywhere. Every number below was computed in this repository
+DRAFT 1, 2026-11-16 (section 6 revised 2026-11-23). Working note, not submitted anywhere. Every number below was computed in this repository
 (branch `gpu-solver`); the run ledgers are `runs/*.jsonl`, and `STATE.md` records what is trusted and what was
 withdrawn. Tables are produced by `runs/make_note_tables.py`. Items marked [TODO] are not done.
 
@@ -27,12 +27,15 @@ We report:
    This is a conjecture supported by numerics, not a theorem.
 4. At a = -1, the one-parameter family of NON-smooth profiles, Omega ~ |y|^(mu-1) sgn(y) at the origin, that
    connects the smooth ones: the exponent mu(lam) between lam_1 and lam_2 and below lam_2 down to
-   lam = 0.45454, where the peak of the profile has grown to 58 and our solver stalls. No third smooth profile
-   was found: the family approaches a singular profile with an inverse-square-root cusp at a stagnation point.
-   The core of the growing peak is the solution of a parameter-free inner equation, v' = H(1/v), whose constant
-   (3.35819) the computed profiles reproduce to four or five digits with nothing fitted; its far field
-   oscillates in the logarithm (frequency 0.649424), which formally makes the family spiral into the singular
-   profile, near lam = 0.4545 with mu about 2.006, without mu returning to 2.
+   lam = 0.453600, where the peak of the profile has grown to 4200. No third smooth profile was found: the
+   family approaches a singular profile with an inverse-square-root cusp at a stagnation point. The core of the
+   growing peak is the solution of a parameter-free inner equation, v' = H(1/v), whose constant (3.35819) the
+   computed profiles reproduce to four or five digits with nothing fitted; its far field oscillates in the
+   logarithm (frequency 0.649424), which formally makes the family approach the singular profile through
+   log-periodic oscillations. Observed: three turning points of mu and two of the peak position, at peak ratios
+   9.0, 11.5 and 11.4 (predicted 11.2); two of them were predicted, in writing, before being computed. mu stays
+   between 2.00495 and 2.00584 and tends to 2.00577, so it does not return to 2. NOT observed: a turning point of
+   lam itself (none up to peak 4200; one prediction of it failed).
 
 Nothing here is a statement about the Navier-Stokes or Euler equations.
 
@@ -245,26 +248,73 @@ the family should behave like
 so that lam, as a function of the peak, has infinitely many turning points, successive ones at peaks in the
 ratio exp(pi/(2w)) = 11.2 and with amplitudes decreasing by the same factor: the family spirals into the
 singular profile, as in other problems where a branch ends in a singular solution with complex exponents.
-Our lam-continuation stalled because d lam/d(1/peak) decreases steadily (0.107, 0.071, 0.049, 0.037 at peaks
-29, 40, 53, 60): on this reading it was approaching the first turning point. Fits of (7) plus a sigma^2 term
-to the data (`runs/family_spiral_fit.py`) are as good as cubic polynomials for lam and four to six times better
-for mu and y*, but the data cover only half an oscillation, so this does not decide. The fits of (7) put the
-first turning point at peak 85 to 135, lam about 0.4544, and the singular profile at lam_c = 0.4544 to 0.4547,
-mu_c = 2.0060 to 2.0063; mu never comes back to 2 in any fit (spiral or polynomial).
+(The first fits of (7), made from peaks below 64, put a turning point of lam at peak 85 to 135. That was wrong; see
+the direct test below, which supersedes every extrapolated number previously given here.)
 
 If this holds, the family ends in the cusp profile without becoming smooth again, and a third smooth profile,
 if it exists, is not on it. What is computed: (6), its constant, its far field, and the agreement of the peak
 with it. What is formal: the passage from (6) to (7). What is extrapolated: lam_c and mu_c.
 
-Direct test (`runs/sing_track3.py`, marching in mu). The family was followed from peak 58 to peak 134
-(lam = 0.454294, mu = 2.004965). Above peak 75 the residual cannot be brought below 1e-6 to 2e-5, so those points
-are five-digit data. Result: lam is still decreasing at peak 134 and no turning point of lam was seen (the first
-fits had suggested one between 85 and 135; that did not happen). mu, on the other hand, is levelling off towards a
-minimum near peak 150 and mu = 2.0050, where the fits of (7) made from peaks below 64 had put it; and with all
-points (peak > 30) the three-parameter form (7) fits mu four times better than a four-parameter cubic. The ratio
-peak^2 x half-width / kappa stays at 3.352 to 3.357 up to peak 125. So the inner structure is confirmed, the
-logarithmic oscillation is supported by mu and y* but not yet by lam, and the end point is lam_c = 0.4542 to
-0.4547, mu_c = 2.0050 to 2.0061. [TODO: math check of (6) and (7); a solver that stays accurate beyond peak 75.]
+Direct test (`runs/sing_track4.py`; revised 2026-11-23, replacing the 2026-11-20 version of this paragraph).
+A first attempt (`runs/sing_track3.py`) reached peak 134 with residuals of 1e-6 to 2e-5 and was read as a solver
+limit. It was not: the residual lay in the range of the Jacobian, and the causes were (i) solving at a fixed,
+extrapolated lam, (ii) rounding in the Hilbert kernel and quadrature weights for nodes 1e-7 apart, (iii) a
+normalisation row at the origin that fixed the scale of y against a peak that would have had to slide by its own
+width. The present solver pins the peak height, solves for lam and mu together, keeps the basis centred on the peak,
+fixes the scale at the peak (the standard normalisation is restored afterwards by exact rescaling) and forms all
+near-peak differences without cancellation. Residuals, equal on the fitting grid and on a denser shifted grid:
+1e-9 to 1e-8 up to peak 500, 1e-7 at peak 1000 to 2300 with n0 = 1024, 1e-8 to 4e-8 at peak 2000 to 4200 with
+n0 = 1536. The earlier values above peak 75 were wrong by up to 5e-6 in lam and are superseded.
+
+| peak | lam | mu | y* | residual | n0 |
+|---|---|---|---|---|---|
+| 70.61 | 0.454446774 | 2.005951182 | 7.196750 | 1.0e-09 | 1024 |
+| 134.57 | 0.454289417 | 2.004965423 | 7.223795 | 1.9e-09 | 1024 |
+| 155.78 | 0.454258243 | 2.004946874 | 7.229184 | 2.7e-09 | 1024 |
+| 298.95 | 0.454077004 | 2.005246776 | 7.244472 | 5.9e-09 | 1024 |
+| 567.50 | 0.453875544 | 2.005623379 | 7.247910 | 1.8e-08 | 1024 |
+| 1016.3 | 0.453733019 | 2.005800468 | 7.246529 | 9.8e-08 | 1024 |
+| 1777.2 | 0.453650281 | 2.005839700 | 7.244677 | 5.1e-07 | 1024 |
+| 2333.0 | 0.453626555 | 2.005833564 | 7.244038 | 1.4e-08 | 1536 |
+| 3067.4 | 0.453610857 | 2.005820287 | 7.243602 | 2.3e-08 | 1536 |
+| 4212.2 | 0.453600090 | 2.005802625 | 7.243335 | 3.6e-08 | 1536 |
+
+(For n0 = 1024 above peak 1000 the last three digits of mu are not reliable: at peak 2100 and 2333 the n0 = 1536
+value is higher by 1.2e-7 and 1.5e-7; lam agrees to 3e-9.)
+
+Turning points observed (parabola through the three nearest points, in ln peak):
+
+| quantity | turning points (peak: value) | ratio of successive peaks |
+|---|---|---|
+| mu | 17.0: 2.013431 (max); 152.8: 2.00494649 (min); 1754.6: 2.0058397 (max) | 9.0, 11.5 |
+| y* | 49.0: 7.188906 (min); 558.8: 7.247911 (max) | 11.4 |
+| lam | none up to peak 4212 | |
+
+(7) predicts the ratio exp(pi/(2w)) = 11.23 asymptotically. Two of these turning points were predicted before they
+were computed, with the predictions committed to the repository first (commit adc1276): a maximum of y* at peak
+500 to 560 with value 7.2465 to 7.2488 (found: 558.8, 7.24791), and a maximum of mu at peak 1700 +- 100 with value
+2.00583 to 2.00586 (found: 1754.6, 2.0058397). A third prediction, made later and on weaker grounds, FAILED: a
+minimum of lam at peak 1700 to 2600. lam is still decreasing at peak 4212; its decrement per 5 percent step in the
+peak shrinks by about 9 percent per step (2.1e-6, 1.9e-6, 1.8e-6, 1.6e-6, 1.5e-6, 1.3e-6 from peak 3067 to 4111).
+
+Fits with the frequency fixed at w = 0.649424 (`runs/family_spiral_fit2.py`; nothing about the frequency is fitted).
+For mu, the three-parameter form (7) fitted on peaks 30 to 200 predicts the values on peaks 200 to 638 with rms 8e-7
+(a cubic: 3.5e-4); (7) plus a sigma^2 term fitted on peaks 300 to 2000 predicts peaks 2000 to 3900 with rms 5e-7
+and describes ALL points from peak 30 to 3900 with rms 1e-7, while mu varies by 9e-3 over that range. For lam the
+pure form (7) fails out of sample at every stage; (7) plus sigma^2 describes peaks 30 to 3900 with rms 1.4e-6 and
+places the first minimum of lam near peak 5000, which has not been reached. The limits from these fits:
+mu_c = 2.005768 to 2.005770, lam_c = 0.45362 to 0.45365, y*_c = 7.24356 to 7.24365.
+
+Conclusions of this section. Computed: the inner problem (6), its constant and far field; the agreement of the
+peak with it; three turning points of mu and two of y* at peak ratios 9.0, 11.5 and 11.4; mu staying between
+2.00494649 and 2.0058397 from peak 152 to 4212. Supported by prediction in advance: the log-periodic form (7) with
+the frequency of (6), for mu and y*. Not shown: a turning point of lam (so the family has not yet been seen to
+fold back in lam), and therefore the full spiral in the (lam, mu) plane. Formal: the passage from (6) to (7).
+Since mu oscillates about 2.00577 with an amplitude that is now 7e-5 and shrinking, mu does not return to 2 on
+this family: a third smooth profile, if it exists, is not on it. For 2.00494649 < mu < 2.0058397 there are at
+least three distinct profiles with the same exponent mu at the origin.
+[TODO: math check of (6) and (7); why the lam amplitude of (7) is small; inner-constant check above peak 135 with an
+accurate width measurement.]
 
 ## 7. What is not claimed
 
