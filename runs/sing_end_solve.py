@@ -16,7 +16,7 @@ if init:
 else:
     yst = float(os.environ.get("YST", x["ypk"])); lam0 = x["p"][0].item()      # YST: another scale (Theta -> a Theta(y/a))
 NB, NFAR = int(os.environ.get("NB", 0)), int(os.environ.get("NFAR", 0))
-cu = C.Cusp(yst, nL, nR, nj, J, nb=NB, nfar=NFAR)
+cu = C.Cusp(yst, nL, nR, nj, J, nb=NB, nfar=NFAR, kf=float(os.environ.get("KF", C.KF)))
 if os.environ.get("RHO"): C.RHO = float(os.environ["RHO"]); print(f"imposed A_R/A_L = {C.RHO}")
 G = C.CuspGrid(cu, lam0, R_src=RS, m=MM, h0=H0)
 print(f"y* {yst:.9f} nL {nL} nR {nR} origin blocks {nj}x{J}; sources {G.ys.numel()} rows {G.y.numel()} Y {G.Y.item():.2e} "

@@ -38,7 +38,10 @@ class Cusp:
     """Columns: [cL (nL) | cR (nR) | origin blocks (nj J) | cusp blocks L, R (nb each) | far block (nfar)].
     Cusp block: (1-s)^(mu/2) sig^kf T_k(2 sig - 1) on one side (the free t^3.66.. terms; kf = KF assumes A_R = A_L).
     Far block (right side): (1-s)^(mu/2) s^(2(1+lam)) T_k(2 sig - 1): the y^-2 far-field corrections, which are not
-    analytic in s (ccf_fast.FAR)."""
+    analytic in s (ccf_fast.FAR).
+    Tested 2026-11-23 (256/128, fixed lam): nb = 8 lowers the residual from 1.8e-10 to 5e-12, but ANY kf in 3.2..4.5
+    does the same and lam, mu, y* agree to 1e-12 -- the block acts as extra resolution at the cusp; it does NOT verify
+    the exponent 3.6604. nfar = 12 alone changes nothing at this level."""
     def __init__(self, ystar, nL, nR, nj, J, nb=0, nfar=0, kf=KF):
         self.yst, self.nL, self.nR, self.nj, self.J = float(ystar), nL, nR, nj, J
         self.nb, self.nfar, self.kf = nb, nfar, kf
