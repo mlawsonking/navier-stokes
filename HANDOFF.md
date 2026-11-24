@@ -942,3 +942,15 @@ gcusp_inner.py -1 0.04 reproduces xi_h = 3.35803 as before)
 - Meaning: gCLM has smooth unstable self-similar profiles with lam ~ 0.347 for a just above -0.877, born in a fold
   out of the non-smooth family; they do not exist at a = -1 (CCF). Predicted (speculative): further pairs at larger a
   from the later mu minima, and infinitely many when mu_c(a) = 2.
+
+### 2026-11-24, fold of the new smooth pair (agent; commits ceb31df, 544f60e; runs/sing_track4a_pk.py mode fold)
+- Family mu_min(a) at peaks 317/400/420: +1.75e-4 (a = -0.88, peak 366), +1.22e-5 (-0.8775, 374), -1.54e-4 (-0.875, 381).
+  Fold: a_f = -0.87732, peak_f ~ 374, lam_f ~ 0.3532.
+- Smooth branches (mu = 2 pinned, lam and a free, peak as parameter; on = off 1e-8 .. 8e-7):
+  lower: peak 215.38 (a -0.8700) -> 231.42 (a -0.872156, lam 0.348935); upper: peak 1021.8 (-0.8700) -> 571.8 (-0.875356,
+  lam 0.351492). a approaches a_f from both sides. Fit a(ln peak) across the gap 231..572: turning point a = -0.87757 / -0.87725
+  (quartic / cubic), peak 371 / 389. NOT a continuous computed path through the turning point (residual floor rises along
+  the mu = 2 march; cause unknown).
+- Newton stall diagnosed (step outside the linear range near the sharp peak; coefficient-only refits chosen by the
+  ladder); fix: tangent predictor along the fixed-peak family. Converges from |mu - 2| = 1.2e-4 at a different a
+  (basin check passed). n0 = 1536 smooth basis: lower a = -0.87 member lam 0.3471535497, same to < 1e-10, on = off 2.8e-9.
