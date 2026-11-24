@@ -834,3 +834,18 @@ end profile (V(y*) = 0, Omega ~ |y - y*|^(-1/2) two-sided, non-smooth at the ori
 - P4 registered now: (a) y* MINIMUM at peak 5900 .. 6400, value 7.24317 .. 7.24325;
   (b) lam MINIMUM at peak 8300 .. 13000, value 0.453591 .. 0.453593 (weak: fits disagree by 50 percent in position);
   (c) mu MINIMUM near peak 19650, value 2.005762 (not reachable in this run).
+
+### 2026-11-23, night: run v4 ENDED at peak 8386 (residual reached the 1e-7 acceptance threshold). Nothing running.
+- P4(a) y* minimum: OBSERVED at peak 5897.6, value 7.2432573. Registered: peak 5900..6400, value 7.24317..7.24325.
+  Position on the lower edge, value 7e-6 above the window: a near miss, not a clean hit. Ratio to the maximum at
+  558.8: 10.55 (inner value 11.23). y* turning points now: 48.97, 558.83, 5897.6 (ratios 11.41, 10.55).
+- P4(b) lam minimum: NOT RESOLVED. lam still decreasing at peak 8386 (0.453591671); decrement per 3 percent step
+  1.81, 1.68, 1.56, 1.44 e-7 at peaks 7600..8300 (ratio 0.93, still geometric). No turning point of lam has been
+  seen anywhere on the family (peak 8 .. 8386).
+- mu: 2.005774791 at peak 8386, decreasing towards the predicted minimum near peak 19500 (2.005765).
+- Fits to all pinned-peak points, peak 317..8386 (`family_amp.py`): mu rms 1.4e-7 with the oscillation vs 1.2e-6
+  without, R_mu = 0.153, mu_c = 2.005771; y*: 1.1e-5 vs 1.1e-4 (the y* fit degraded when the points above peak
+  5000 were added: either a sigma^3 model limit or y* is less accurate there, since y* in standard normalisation
+  goes through the origin amplitude to the power 1/(mu-1); not investigated); lam: 7.5e-7 vs 1.6e-6, not decisive.
+- To go further: the residual doubles between peak 7200 and 8400 (eps = 1.5e-8 in x); needs ACCEPT=3e-7 or a look
+  at what rounds there. RESUME: N0=1536 ACCEPT=3e-7 .venv/Scripts/python -u runs/sing_track4.py march runs/sing_track4_v4.pt v5 1.03 20

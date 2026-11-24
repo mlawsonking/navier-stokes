@@ -27,15 +27,15 @@ We report:
    This is a conjecture supported by numerics, not a theorem.
 4. At a = -1, the one-parameter family of NON-smooth profiles, Omega ~ |y|^(mu-1) sgn(y) at the origin, that
    connects the smooth ones: the exponent mu(lam) between lam_1 and lam_2 and below lam_2 down to
-   lam = 0.453600, where the peak of the profile has grown to 4200. No third smooth profile was found: the
+   lam = 0.453592, where the peak of the profile has grown to 8386. No third smooth profile was found: the
    family approaches a singular profile with an inverse-square-root cusp at a stagnation point. The core of the
    growing peak is the solution of a parameter-free inner equation, v' = H(1/v), whose constant (3.35819) the
    computed profiles reproduce to four or five digits with nothing fitted; its far field oscillates in the
    logarithm (frequency 0.649424), which formally makes the family approach the singular profile through
    log-periodic oscillations. Observed: three turning points of mu and two of the peak position, at peak ratios
-   9.0, 11.5 and 11.4 (predicted 11.2); two of them were predicted, in writing, before being computed. mu stays
+   9.0, 11.5, 11.4 and 10.6 (predicted 11.2); two of them were predicted, in writing, before being computed. mu stays
    between 2.00495 and 2.00584 and tends to 2.00577, so it does not return to 2. NOT observed: a turning point of
-   lam itself (none up to peak 4200; one prediction of it failed).
+   lam itself (none up to peak 8386; one prediction of it failed).
 
 Nothing here is a statement about the Navier-Stokes or Euler equations.
 
@@ -278,6 +278,8 @@ n0 = 1536. The earlier values above peak 75 were wrong by up to 5e-6 in lam and 
 | 2333.0 | 0.453626555 | 2.005833564 | 7.244038 | 1.4e-08 | 1536 |
 | 3067.4 | 0.453610857 | 2.005820287 | 7.243602 | 2.3e-08 | 1536 |
 | 4212.2 | 0.453600090 | 2.005802625 | 7.243335 | 3.6e-08 | 1536 |
+| 5830.6 | 0.453594435 | 2.005786639 | 7.243257 | 5.6e-08 | 1536 |
+| 8386.3 | 0.453591671 | 2.005774791 | 7.243379 | 9.9e-08 | 1536 |
 
 (For n0 = 1024 above peak 1000 the last three digits of mu are not reliable: at peak 2100 and 2333 the n0 = 1536
 value is higher by 1.2e-7 and 1.5e-7; lam agrees to 3e-9.)
@@ -287,14 +289,15 @@ Turning points observed (parabola through the three nearest points, in ln peak):
 | quantity | turning points (peak: value) | ratio of successive peaks |
 |---|---|---|
 | mu | 17.0: 2.013431 (max); 152.8: 2.00494649 (min); 1754.6: 2.0058397 (max) | 9.0, 11.5 |
-| y* | 49.0: 7.188906 (min); 558.8: 7.247911 (max) | 11.4 |
-| lam | none up to peak 4212 | |
+| y* | 49.0: 7.188906 (min); 558.8: 7.247911 (max); 5897.6: 7.2432573 (min) | 11.4, 10.6 |
+| lam | none up to peak 8386 | |
 
 (7) predicts the ratio exp(pi/(2w)) = 11.23 asymptotically. Two of these turning points were predicted before they
 were computed, with the predictions committed to the repository first (commit adc1276): a maximum of y* at peak
 500 to 560 with value 7.2465 to 7.2488 (found: 558.8, 7.24791), and a maximum of mu at peak 1700 +- 100 with value
 2.00583 to 2.00586 (found: 1754.6, 2.0058397). A third prediction, made later and on weaker grounds, FAILED: a
-minimum of lam at peak 1700 to 2600. lam is still decreasing at peak 4212; its decrement per 5 percent step in the
+minimum of lam at peak 1700 to 2600. A fourth, for the next minimum of y* (peak 5900 to 6400, value 7.24317 to
+7.24325), was a near miss (found: 5897.6, 7.2432573). lam is still decreasing at peak 8386 (the end of the run); its decrement per 5 percent step in the
 peak shrinks by about 9 percent per step (2.1e-6, 1.9e-6, 1.8e-6, 1.6e-6, 1.5e-6, 1.3e-6 from peak 3067 to 4111).
 
 Fits with the frequency fixed at w = 0.649424 (`runs/family_spiral_fit2.py`; nothing about the frequency is fitted).

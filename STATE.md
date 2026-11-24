@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-21 23:20 (PAUSED, no jobs running; resume command at the end of 2f). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-23 night (no jobs running; family followed to peak 8386, see 2f). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -216,16 +216,19 @@ READ THIS BEFORE USING ANY sing_track3 NUMBER ABOVE PEAK 75: those were off by u
 - Predictions registered in commit adc1276, before the data: (P1) mu maximum at peak 1700 +- 100, value
   2.00583 .. 2.00586; (P2) y* maximum at peak 500 .. 560, value 7.2465 .. 7.2488; (P3) lam: no stable prediction.
   (P3, registered at peak 638 in commit 9a-series, see HANDOFF) lam MINIMUM at peak 1700 .. 2600, 0.45380 .. 0.45386.
-  OUTCOME so far (PAUSED 2026-11-21 23:20 at Michael's request, march stopped at peak 1236, nothing running):
-  P2 CONFIRMED: y* maximum 7.2479112 at peak 558.8 (ratio to the minimum at 48.97: 11.41; theory 11.23).
-  P1 not reached yet: mu = 2.005825 at peak 1236 and still rising, increments shrinking (5.5e-6, 4.9e-6, 4.4e-6,
-  3.8e-6 per 4 percent step). P3 not reached: lam = 0.453698 at peak 1236, still falling (-6.4e-6 per step).
-  mu: pure spiral fitted on peak 30..200 predicts peak 200..638 with rms 8e-7 (cubic 3.5e-4).
-  Accuracy: on = off 1e-9 .. 1e-8 up to peak 500, 1e-7 at peak 1000..1236 (rounding in the basis argument
-  (x - x0)/eps, not resolution: n0 = 1536 gives the same lam, mu to 1e-9 at peak 1016). FWHM / pk2HW printed by
-  sing_track4 is only good to ~0.3 percent (coarse half-maximum search): do NOT use it for the inner constant.
-  RESUME: ACCEPT=1e-6 .venv/Scripts/python -u runs/sing_track4.py march runs/sing_track4_w3.pt w4 1.04 30
-  (data: sing_track4_w3.pt holds everything from peak 70 to 1236; ledger cases sing-track4-w1, -w2, -w3).
+  OUTCOME (2026-11-23, run ended at peak 8386, nothing running; details in HANDOFF 2026-11-23 entries):
+  P1 CONFIRMED: mu maximum 2.0058397 at peak 1754.6. P2 CONFIRMED: y* maximum 7.2479112 at peak 558.8.
+  P3 FAILED: no lam minimum in peak 1700..2600. P4(a) y* minimum at 5897.6, 7.2432573 (window 5900..6400,
+  7.24317..7.24325: near miss). P4(b) lam minimum at 8300..13000: not resolved, lam still falling at peak 8386.
+  Turning points: mu 17.0, 152.8, 1754.6 (ratios 9.0, 11.5); y* 48.97, 558.83, 5897.6 (11.41, 10.55); theory 11.23.
+  lam: NONE on peak 8..8386 (0.453591671 at the end; d lam/d ln peak ~ peak^-2.2). Limits from fits:
+  mu_c = 2.005771, lam_c = 0.45358 .. 0.45361, y*_c = 7.2437. mu never returns to 2 (2.004946 <= mu for peak > 152).
+  Accuracy: on = off 1e-9..1e-8 to peak 500; above peak 1000 use n0 = 1536 (cases sing-track4-v1..v4: 1e-8..1e-7);
+  the n0 = 1024 points above peak 1000 (w3, w4) have mu low by ~1.5e-7. Above peak 2400 a cap on the lam/mu move per
+  iteration is needed (CAP, default 2e-6). FWHM printed by sing_track4 is now interpolated but in the INTERNAL
+  normalisation: multiply by `scale` before using pk2HW.
+  RESUME: N0=1536 ACCEPT=3e-7 .venv/Scripts/python -u runs/sing_track4.py march runs/sing_track4_v4.pt v5 1.03 20
+  ANALYSIS: runs/family_spiral_fit2.py w1 w2 w3 w4 v1 v2 v3 v4 ; runs/family_amp.py 300 w1 w2 w3 w4 v1 v2 v3 v4
 
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
