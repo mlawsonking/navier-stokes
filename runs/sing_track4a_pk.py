@@ -208,6 +208,8 @@ elif mode == "fold":
         q = qs; shape = sh_s; st0 = dict(st0, shape=sh_s)
     store = [dict(st0, pf=q.cpu(), a=st0["a"])]; fn = f"runs/sing_track4a_{tag}.pt"
     lr0 = math.log(ratio); first = True; done = 0; fails = 0; lr = lr0
+    if os.environ.get("HIST"):     # resume a fold march: take the last NPRED states of SRC (a fold store) as history
+        store = [dict(x) for x in torch.load(src, map_location="cpu")[-T.NP:]]; shape = store[-1]["shape"]; n0 = shape[0]; first = False
 
     def fsolve(P, pf, a, max_iter=15):
         n = P.nrow()
@@ -297,7 +299,7 @@ elif mode == "fold":
             fo.write(json.dumps(dict(case="sing-track4a-fold-" + tag, a=a, lam=pf[0].item(), mu=2.0, C=pf[-1].item(), res_sup=sup, res_offgrid=off,
                                      peak=pk, target=tgt, y_g=yg, fwhm=fwy, smooth_misfit=mis, shape=list(shape))) + chr(10))
         eps_new = T.EPSF * fwx
-        if abs(math.log(eps_new / P.eps)) > 0.05:
+        if abs(math.log(eps_new / P.eps)) > float(os.environ.get("REMAP", 0.05)):
             pf = T.remap_pf(pf, P.mapof(pf[0]), (P.mapof(pf[0])[0], eps_new), shape); P.eps = eps_new
         store.append(dict(a=a, pf=pf.clone().cpu(), yg=yg, eps=P.eps, target=tgt, fwy=fwy, shape=shape, off=off, sup=sup)); torch.save(store, fn)
         if first: store = store[-1:]; first = False
