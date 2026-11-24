@@ -873,3 +873,24 @@ like lam. If true, P3 and P4(b) failed for a structural reason, and lam may be m
   (not read). Nothing found on an infinite accumulation of profiles in these models.
 - Net: no prior match found for (i) the non-smooth family, (ii) the two-sided cusp + inner equation, (iii) the
   log-periodic approach. Weak negative (partial reads). Human check still needed (vtask #400).
+
+### 2026-11-23, general-a analysis (CPU agent; derivations formal, numbers computed; spot-checked by coordinator:
+gcusp_inner.py -1 0.04 reproduces xi_h = 3.35803 as before)
+- Cusp at an interior stagnation point for general a: Omega ~ |d|^(-p), p = 1/(1-a); inner problem v' = H(v^(-1/|a|));
+  log-frequency from w tanh(pi w/2) = p cot(pi p/2) (a = -1: 2w tanh(pi w/2) = 1). w(-0.9) = 0.636334,
+  w(-0.95) = 0.643152, w(-1.05) = 0.655209; turning-point peak ratio exp(pi/(w(1-a))): 13.44, 12.24, 11.23, 10.37.
+- Origin law for general a: mu (1 + lam + a U'(0)) = lam + (1+a) U'(0). Exact integrated (Burgers-type) residual for
+  any a: -lam Theta + ((1+lam)y - U) Theta' + (a+1) int_0^y U Omega', plus a far-field constant column.
+  Validated: d lam_1/da = -1.0399 vs -1.03954 from the gclm_log branch; Newton continuation lam_1(-0.98) =
+  0.584944479 vs 0.5849444793.
+- First-order perturbation of the a = -1 family at fixed peak (41 states, peak 7.5 .. 2283): d mu_c/da = -0.0180 +- 0.0002,
+  d lam_c/da = -0.826. Nonlinear check at peak 134, a = -1 +- 0.01: central difference equals the tangent;
+  d^2 mu/da^2 = -0.166 at fixed peak 134.
+- SPECULATIVE extrapolation: mu_c(a) = 2 near a = -0.82 .. -0.68; before that the first mu minimum (2.00495 at peak 153
+  at a = -1) would touch 2 near a = -0.83: a fold creating a PAIR OF NEW SMOOTH PROFILES near peak 150, lam ~ 0.32.
+  At mu_c = 2: infinitely many smooth profiles accumulating at the cusp profile (peak ratio ~17..20).
+- Fractional deformation U = Lambda^(alpha-1) H Theta: Burgers form survives; w(alpha) computed (w(0.9) = 0.6146,
+  w(1.1) = 0.6792) but the quadrature and origin basis must be rebuilt; the a route is cheaper.
+- Scripts: runs/gcusp_inner.py, gcusp_dmuda.py (+ .jsonl), gcusp_fit.py, gcusp_astep.py, gcusp_alpha_indicial.py.
+- NEXT: general-a version of sing_track4 (remap every step), march at fixed peak ~150 from a = -1 toward -0.8 and watch
+  whether mu_min reaches 2 (the fold), then families at fixed a.
