@@ -308,11 +308,24 @@ pure form (7) fails out of sample at every stage; (7) plus sigma^2 describes pea
 places the first minimum of lam near peak 5000, which has not been reached. The limits from these fits:
 mu_c = 2.005768 to 2.005770, lam_c = 0.45362 to 0.45365, y*_c = 7.24356 to 7.24365.
 
+The end profile computed directly (`gpu_solver/ccf_cusp.py`, `runs/sing_end_rho1.py`). The singular profile can be
+solved for on its own: Theta is represented by separate expansions in |y - y*|^(1/2) on either side of y*, joined
+continuously, and V(y*) = 0 is not imposed but comes out (to 7e-6). Such cusp profiles form a one-parameter family,
+parametrised by the ratio rho of the cusp amplitudes on the two sides (the leading order fixes only their product);
+the family of profiles above ends at the symmetric member rho = 1, where
+    lam_c = 0.4535843163,  mu_c = 2.0057717200,  U'(0)_c = 1.2274447652,  y*_c = 7.24373707
+(four discretisations, residuals 5e-12 to 3e-11). A fit of the family data with the frequency fixed and the limit
+left free gives lam_c to 6.5e-9 and U'(0)_c to 1.3e-8 of these values. The same fit explains why lam never turns:
+lam - lam_c = sigma (0.112 + 0.053 cos(2 w ln sigma + phase)) + O(sigma^2), and since 0.053 (1 + 4w^2)^(1/2) = 0.087
+is smaller than 0.112, lam decreases monotonically for all peaks, while mu (non-oscillating part -0.008, oscillating
+0.156) turns infinitely often. That the end is the rho = 1 member is supported numerically (the fit, and the absence
+of an asymmetric inner solution near the even one), not proven.
+
 Conclusions of this section. Computed: the inner problem (6), its constant and far field; the agreement of the
 peak with it; three turning points of mu and two of y* at peak ratios 9.0, 11.5 and 11.4; mu staying between
 2.00494649 and 2.0058397 from peak 152 to 4212. Supported by prediction in advance: the log-periodic form (7) with
-the frequency of (6), for mu and y*. Not shown: a turning point of lam (so the family has not yet been seen to
-fold back in lam), and therefore the full spiral in the (lam, mu) plane. Formal: the passage from (6) to (7).
+the frequency of (6), for mu and y*. lam has no turning point and, by the fit above, never has one: the approach is log-periodic in mu,
+y* and the profile, but monotone in lam. Formal: the passage from (6) to (7).
 Since mu oscillates about 2.00577 with an amplitude that is now 7e-5 and shrinking, mu does not return to 2 on
 this family: a third smooth profile, if it exists, is not on it. For 2.00494649 < mu < 2.0058397 there are at
 least three distinct profiles with the same exponent mu at the origin.

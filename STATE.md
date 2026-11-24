@@ -230,6 +230,15 @@ READ THIS BEFORE USING ANY sing_track3 NUMBER ABOVE PEAK 75: those were off by u
   RESUME: N0=1536 ACCEPT=3e-7 .venv/Scripts/python -u runs/sing_track4.py march runs/sing_track4_v4.pt v5 1.03 20
   ANALYSIS: runs/family_spiral_fit2.py w1 w2 w3 w4 v1 v2 v3 v4 ; runs/family_amp.py 300 w1 w2 w3 w4 v1 v2 v3 v4
 
+### 2g. End profile computed directly; why lam never turns; general a (2026-11-23, agents; details in HANDOFF)
+- `gpu_solver/ccf_cusp.py` + `runs/sing_end_rho1.py`: singular cusp profiles form a one-parameter family in the
+  amplitude ratio A_R/A_L; the family ends at A_R = A_L: lam_c = 0.4535843163, mu_c = 2.0057717200,
+  U'(0)_c = 1.2274447652, y*_c = 7.24373707 (residual 5e-12..3e-11). Family fit with free limit agrees: lam 6.5e-9.
+- lam - lam_c = sigma(0.112 + 0.053 cos(...)): monotone forever (oscillating slope amplitude 0.087 < 0.112). mu turns.
+- General a (`runs/gcusp_*.py`): w(a) from w tanh(pi w/2) = p cot(pi p/2), p = 1/(1-a); d mu_c/da = -0.0180 at a = -1
+  (first-order perturbation, validated on lam_1(a) to 9 digits); SPECULATIVE fold creating new smooth profiles near
+  a = -0.83, peak ~150. Tracker runs/sing_track4a.py being built (agent).
+
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
   Lorentzian: height 42 -> 225 for a = -0.126 -> -0.071, position y* 1.28 -> 0.47, height x FWHM / y*

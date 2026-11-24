@@ -894,3 +894,22 @@ gcusp_inner.py -1 0.04 reproduces xi_h = 3.35803 as before)
 - Scripts: runs/gcusp_inner.py, gcusp_dmuda.py (+ .jsonl), gcusp_fit.py, gcusp_astep.py, gcusp_alpha_indicial.py.
 - NEXT: general-a version of sing_track4 (remap every step), march at fixed peak ~150 from a = -1 toward -0.8 and watch
   whether mu_min reaches 2 (the fold), then families at fixed a.
+
+### 2026-11-23, DIRECT SOLVE of the singular end profile (GPU agent; commits 5d1214a, a67874a, e828bf4)
+- gpu_solver/ccf_cusp.py: separate Chebyshev series in sqrt|s - s*| on either side of y*, continuity at y*, V(y*) = 0
+  NOT imposed (comes out: V/(2A sqrt|d|) -> 1 to 7e-6). Singular cusp profiles form a ONE-PARAMETER family in the
+  amplitude ratio rho = A_R/A_L (leading order fixes only A_L A_R = kappa/2): rho = 0.99646, 1, 1.00070, 1.00253 at
+  lam = 0.4530, 0.453584, 0.4537, 0.4540. The family of smooth-core profiles ends at the rho = 1 member:
+      lam_c = 0.4535843163 (+-1e-9), mu_c = 2.0057717200 (+-5e-10), U'(0)_c = 1.2274447652, y*_c = 7.24373707 (+-4e-8)
+  four resolutions/scalings, residual 5e-12 .. 3e-11 (off-grid 2-6x on-grid only in the deepest cusp rows).
+- Local theory (agent, formal): exponents from tan(pi k/2) = (rho + 1/rho) k/(1-k^2); rho = 1: even k = 3.660448,
+  odd k = 1, 5.781948; no resonances. Cusp exponent 3.6604 NOT verified numerically (block with any k in 3.2..4.5 works).
+- COORDINATOR CHECK (independent fit of the family ledger, model q_c + s(a + b cos + c sin)(2w ln s) + d s^2, w fixed):
+  lam limit 0.4535843228 (peak >= 1000; direct - 6.5e-9), 0.4535842483 (peak >= 300); U'(0) limit 1.2274447784
+  (peak >= 300; +1.3e-8). mu limit 2.0057721 / 2.0057770 (+4e-7 / +5e-6; mu fit is ill-conditioned, family mu good to 1e-7).
+- WHY LAM NEVER TURNS (resolves P3/P4(b)): lam - lam_c = sigma (0.112 + 0.053 cos(2w ln sigma + phi)) + O(sigma^2).
+  d/d sigma has a constant part 0.112 and an oscillating part of amplitude 0.053 sqrt(1 + 4w^2) = 0.087 < 0.112, so lam is
+  MONOTONE for all peaks. mu: constant part -0.008, oscillating 0.156: turns. The "lam oscillation at order sigma^2"
+  lead of the previous entry is withdrawn (it was a model without the non-oscillating sigma term).
+- Open: the A_R = A_L selection and continuity of the singular family are numerical, not proven; asymmetric inner
+  problem has no solution near the even one (single resolution), which supports rho_end = 1.
