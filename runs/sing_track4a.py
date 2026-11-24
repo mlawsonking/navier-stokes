@@ -66,13 +66,22 @@ class Problem:
         BTh = torch.cat([BTh, ThC[:, None]], 1); BOm = torch.cat([BOm, OmC[:, None]], 1); AU = torch.cat([AU, UC[:, None]], 1)
         up0 = torch.cat([up0, up0C.reshape(1)])
         Bg = torch.cat([S._fields(lam, mu, self.ygt, self.shape)[1], extra(lam, mu, self.ygt)[1][:, None]], 1)
-        return BTh, BOm, AU, up0, wt, Bg
+        # U' = H Omega on the rows (Omega odd: kernel 2t/(pi (y^2 - t^2))), the same accurate half-step rule as for U
+        BOs = torch.cat([S._fields(lam, mu, Gr.ys, self.shape)[1], OmCs[:, None]], 1)
+        AUp = (2 / math.pi) * (Gr.K @ (Gr.ys[:, None] * BOs))
+        return BTh, BOm, AU, up0, wt, Bg, AUp
 
     def resid(self, pf, a, Gr=None, want=False):
         Gr = Gr or self.G; lam, mu, cc = pf[0], pf[1], pf[2:]
-        BTh, BOm, AU, up0, wt, Bg = Fd = self.fields(pf, Gr)
-        Th, Om, U, u0 = BTh @ cc, BOm @ cc, AU @ cc, up0 @ cc
-        Omt = deriv(Om, h); Gi = u0 * (Gr.y * Om - Th) + cumint((U - u0 * Gr.y) * Omt, h)
+        BTh, BOm, AU, up0, wt, Bg, AUp = Fd = self.fields(pf, Gr)
+        Th, Om, U, u0, Up = BTh @ cc, BOm @ cc, AU @ cc, up0 @ cc, AUp @ cc
+        # Gint = U Omega - int_0^y U' Omega dy: no derivative of the sharp Omega (4th-order differences of Omega had a
+        # 1e-5 relative error at the peak, seen as an off-grid residual of 1e-7 per 0.01 in a). Prefix 0..y_0 from
+        # U' - U'(0) ~ |y|^(mu-1): u0 Theta_0 + (U'_0 - u0) Omega_0 y_0/(2 mu - 1). Rows are uniform in tau: dy = y_tau dtau.
+        yt = deriv(Gr.y, h); m2 = 2 * mu - 1
+        pre = u0 * Th[0] + (Up[0] - u0) * Om[0] * Gr.y[0] / m2
+        Gi = U * Om - pre - cumint(Up * Om * yt, h)
+        Omt = yt
         V = (1 + lam) * Gr.y - U
         R = (-lam * Th + V * Om + (a + 1) * Gi) / wt
         org = (-lam + (1 + lam - u0) * mu + (a + 1) * u0 * (mu - 1)).reshape(1)
@@ -84,9 +93,10 @@ class Problem:
 
     def jac(self, pf, a):
         r, ga, Fd, Th, Om, U, u0, Omt, V = self.resid(pf, a, want=True)
-        BTh, BOm, AU, up0, wt, Bg = Fd; lam, mu = pf[0], pf[1]; G = self.G; y = G.y[:, None]
-        dGi = (G.y * Om - Th)[:, None] * up0[None, :] + u0 * (y * BOm - BTh) \
-            + cumint((AU - y * up0[None, :]) * Omt[:, None] + (U - u0 * G.y)[:, None] * deriv(BOm, h), h)
+        BTh, BOm, AU, up0, wt, Bg, AUp = Fd; lam, mu = pf[0], pf[1]; G = self.G; yt = Omt; m2 = 2 * mu - 1
+        Up = AUp @ pf[2:]
+        dpre = up0 * Th[0] + u0 * BTh[0] + ((AUp[0] - up0) * Om[0] + (Up[0] - u0) * BOm[0]) * G.y[0] / m2
+        dGi = AU * Om[:, None] + U[:, None] * BOm - dpre[None, :] - cumint((AUp * Om[:, None] + Up[:, None] * BOm) * yt[:, None], h)
         Jc = (-lam * BTh + V[:, None] * BOm - Om[:, None] * AU + (a + 1) * dGi) / wt[:, None]
         oc = ((-mu + (a + 1) * (mu - 1)) * up0)[None]; Bf = Bg / self.target
         Jc = torch.cat([Jc, oc, Bf[0:1], 100 * (Bf[1:2] - Bf[2:3])])
