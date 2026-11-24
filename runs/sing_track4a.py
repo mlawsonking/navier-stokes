@@ -20,7 +20,7 @@ from gpu_solver import ccf_sing as S, ccf_fast as F
 DEV = os.environ.get("DEV", "cpu"); torch.set_num_threads(int(os.environ.get("THREADS", 8))); DT = S.DT
 ACC = float(os.environ.get("ACCEPT", 3e-7)); CAP = float(os.environ.get("CAP", 1e-4)); EPSF = float(os.environ.get("EPSF", 1.0))
 RR = float(os.environ.get("ROWS", 6)); NP = int(os.environ.get("NPRED", 3)); h = 0.0125
-A = sys.argv; mode = A[1]
+A = sys.argv; mode = A[1] if (__name__ == "__main__" and len(A) > 1) else "import"   # importable (sing_track4a_pk.py)
 
 
 # ---------------- quadrature helpers (as gcusp_astep) ----------------
@@ -141,7 +141,7 @@ def tsvd_steps(Jm, rhs):
     return out
 
 
-def solve(P, pf, a, max_iter=15, tol=2e-9, verbose=True):
+def solve(P, pf, a, max_iter=15, tol=float(os.environ.get("TOL", 2e-9)), verbose=True):
     r, ga, Jm = P.jac(pf, a); n = P.nrow(); hist = [r.norm().item()]; stall = 0
     for it in range(max_iter):
         if not (torch.isfinite(Jm).all() and torch.isfinite(r).all()): break
@@ -226,11 +226,11 @@ if mode == "march":
 elif mode == "resume":
     src, tag, a_end, da = A[2], A[3], float(A[4]), float(A[5]); store = torch.load(src, map_location="cpu"); fn = f"runs/sing_track4a_{tag}.pt"
     st = store[-1]; shape = st["shape"]; yg, target = st["yg"], st["target"]; a = st["a"]; first_tangent = None
-else:
+elif mode != "import":
     raise SystemExit(__doc__)
 
-da0 = da; fails = 0
-while (a_end - a) * math.copysign(1, da) > 1e-12:
+da0 = da if mode != "import" else 0.0; fails = 0
+while mode != "import" and (a_end - a) * math.copysign(1, da) > 1e-12:
     a_t = a + da
     use = store[-NP:]
     eps_t = math.exp(sum(wi * math.log(s["eps"]) for wi, s in zip(lagrange([s["a"] for s in use], a_t), use))) if len(use) > 1 else use[-1]["eps"]

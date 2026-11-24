@@ -46,7 +46,7 @@ if mode == "peak":
         p = S.remap0(p, tuple(x["map"]), (2 * (1 + yg * yg) ** (-0.5 / (1 + lam0)) - 1, eps), shape, DEV)
     mapof = lambda lam: (2 * (1 + yg * yg) ** (-0.5 / (1 + float(lam))) - 1, eps)
 else:
-    S.CENTER = None; eps = x["map"][1]; mapof = lambda lam: tuple(x["map"]); p[1] = MU
+    S.CENTER = None; eps = x["map"][1]; mapof = lambda lam: tuple(x["map"]); mu_old = p[1].item()
 F.MAP = mapof(lam0)
 G = S.peak_grid(lam0, yg, mapof(lam0), n0, h=h, R=RR, device=DEV); nrow = G.y.numel()
 G2 = S.peak_grid(lam0, yg, mapof(lam0), n0, h=h * 0.8, R=RR * 1.3, device=DEV, shift=0.37, widen=1.4)
@@ -124,7 +124,7 @@ def newton(pf, a, its=12):
             if t > 1e-3 and (best is None or nn < best[0]): best = (nn, q, cut, t)
         if best is None: break
         pf = best[1]; print(f"     newton {it} |r| {rn:.2e} -> {best[0]:.2e} (cut {best[2]:.0e}, t {best[3]})", flush=True)
-        if best[0] > 0.5 * rn or best[0] < 1e-12: break
+        if best[0] > float(os.environ.get("NEWTON_GAIN", 0.5)) * rn or best[0] < 1e-12: break
     return pf
 
 
@@ -135,10 +135,26 @@ def report(pf, a):
 
 
 pf = torch.cat([p, torch.zeros(1, dtype=DT)]); a = -1.0
+if mode == "mu" and abs(mu_old - MU) > 0:
+    # project the stored (mu_old, with origin blocks) Theta onto the mu = MU basis, N_0 block only (weighted LSQ on the
+    # rows): simply overwriting mu leaves the large, nearly cancelling block coefficients in place (residual O(1))
+    F.MAP = mapof(pf[0]); Bo = S.operators(pf[0], torch.tensor(mu_old, dtype=DT), G, shape)[0]; Th_old = Bo @ p[2:]
+    Bn, _, _, _, wtn, _ = S.operators(pf[0], torch.tensor(MU, dtype=DT), G, shape)
+    cn = torch.linalg.lstsq((Bn[:, :n0] / wtn[:, None]), (Th_old / wtn)[:, None]).solution[:, 0]
+    pf[1] = MU; pf[2:] = 0; pf[2:2 + n0] = cn
+    print(f"projected mu {mu_old:.6f} -> {MU}: fit residual {((Bn[:, :n0] @ cn - Th_old) / wtn).abs().max().item():.1e}", flush=True)
 print(f"state {src}[{k}] mode {mode} n0 {n0} rows {nrow} target peak {target:.3f} at y {yg:.5f}", flush=True)
-pf = newton(pf, a, its=6); report(pf, a)
+pf = newton(pf, a, its=int(os.environ.get("ITS0", 6))); report(pf, a)
 da = (a_end - a) / nst; prev = None
 for st in range(nst):
     r, ga, Jm, free = jac(pf, a); dx = tsolve(Jm, -ga)[2][1]
     print(f"   tangent at a {a:+.4f}: dlam/da {(dx[0].item() if mode == 'mu' else dx[0].item()):+.6f}" + (f" dmu/da {dx[1].item():+.6f}" if mode == "peak" else ""), flush=True)
     a = a + da; pf = newton(unpack(pf, da * dx, free), a); report(pf, a)
+if os.environ.get("SAVE"):
+    # final state, its peak and the sign changes / extrema of Omega (for comparing profiles)
+    F.MAP = mapof(pf[0]); y = torch.exp(torch.linspace(math.log(1e-4), math.log(1e8), 400001, dtype=DT))
+    Om = S._fields(pf[0], pf[1], y, shape)[1] @ pf[2:-1] + pf[-1] * extra(pf[0], pf[1], y)[1]
+    sc = int((torch.sign(Om[1:]) != torch.sign(Om[:-1])).sum().item()); dd = Om.abs().diff(); ext = int(((dd[1:] * dd[:-1]) < 0).sum().item())
+    i = Om.abs().argmax().item()
+    print(f"final a {a:+.5f} lam {pf[0].item():.9f} peak {Om.abs().max().item():.4f} at y {y[i].item():.4f}  Omega sign changes {sc}, extrema of |Omega| {ext}", flush=True)
+    torch.save(dict(a=a, pf=pf, map=mapof(pf[0]), ypk=yg, shape=shape, center=S.CENTER), os.environ["SAVE"])
