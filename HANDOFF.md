@@ -849,3 +849,12 @@ end profile (V(y*) = 0, Omega ~ |y - y*|^(-1/2) two-sided, non-smooth at the ori
   goes through the origin amplitude to the power 1/(mu-1); not investigated); lam: 7.5e-7 vs 1.6e-6, not decisive.
 - To go further: the residual doubles between peak 7200 and 8400 (eps = 1.5e-8 in x); needs ACCEPT=3e-7 or a look
   at what rounds there. RESUME: N0=1536 ACCEPT=3e-7 .venv/Scripts/python -u runs/sing_track4.py march runs/sing_track4_v4.pt v5 1.03 20
+
+### 2026-11-23, late: lead on why lam never turns (CPU fits only, ledger data, no new runs)
+Comparing models with w fixed: for mu the oscillation enters at ORDER sigma (rms 1.4e-7 vs 3e-6 if put at sigma^2).
+For lam the best model puts it at ORDER sigma^2: lam = lam_c + c2 s^2 + s^2 (a cos + b sin)(2 w ln s) + c3 s^3,
+rms 2.7e-7 (peak >= 300) and 1.1e-8 (peak >= 1000), against 7.5e-7 and 4.7e-8 with the oscillation at order sigma.
+Hypothesis (mine, untested): the O(sigma) coefficient of the inner mode in lam VANISHES (a solvability / stationarity
+reason), so lam's oscillation is O(sigma^2) and competes with the smooth c2 sigma^2 term. Then lam has turning points
+only if R2 sqrt(1+w^2) > |c2|; the fits straddle 1 (0.5 .. 2.1 depending on window), i.e. undecided. U'(0) behaves
+like lam. If true, P3 and P4(b) failed for a structural reason, and lam may be monotone for all peaks.
