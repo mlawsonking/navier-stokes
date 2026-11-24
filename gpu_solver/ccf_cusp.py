@@ -31,10 +31,19 @@ import torch
 from .ccf import cheb3, DT
 
 
+KF = 3.660448369140012    # cusp exponent (in t = |d|^1/2) for A_R = A_L: root of tan(pi k/4) = -1/k
+
+
 class Cusp:
-    def __init__(self, ystar, nL, nR, nj, J):
+    """Columns: [cL (nL) | cR (nR) | origin blocks (nj J) | cusp blocks L, R (nb each) | far block (nfar)].
+    Cusp block: (1-s)^(mu/2) sig^kf T_k(2 sig - 1) on one side (the free t^3.66.. terms; kf = KF assumes A_R = A_L).
+    Far block (right side): (1-s)^(mu/2) s^(2(1+lam)) T_k(2 sig - 1): the y^-2 far-field corrections, which are not
+    analytic in s (ccf_fast.FAR)."""
+    def __init__(self, ystar, nL, nR, nj, J, nb=0, nfar=0, kf=KF):
         self.yst, self.nL, self.nR, self.nj, self.J = float(ystar), nL, nR, nj, J
-        self.n = nL + nR + nj * J
+        self.nb, self.nfar, self.kf = nb, nfar, kf
+        self.n0 = nL + nR + nj * J
+        self.n = self.n0 + 2 * nb + nfar
 
     def geom(self, lam, y, d):
         """s, 1-s, sigma, 1-sigma, left-mask for points y (d = y - y* given accurately)."""
@@ -72,6 +81,18 @@ class Cusp:
             else:
                 ff = oms ** g; ffx = g * oms ** (g - 1)
             blocks.append(ff[:, None] * P); dblocks.append(ff[:, None] * P1 - ffx[:, None] * P)
+        cheb = lambda n: (lambda k: (torch.cos(k[None, :] * th[:, None]),
+                                     k[None, :] * torch.sin(k[None, :] * th[:, None]) / sth[:, None] * dxds[:, None]))(torch.arange(n, dtype=DT, device=y.device))
+        if self.nb:
+            T, dT = cheb(self.nb); g = sig ** self.kf; gs = self.kf * sig ** (self.kf - 1) * dxds / 2     # d sig/ds = dxds/2
+            for msk in (left, ~left):
+                m = msk.to(DT)[:, None]
+                blocks.append(m * (f * g)[:, None] * T)
+                dblocks.append(m * ((f * g)[:, None] * dT + (f * gs - fx * g)[:, None] * T))
+        if self.nfar:
+            T, dT = cheb(self.nfar); e = 2 / al; g = s ** e; gs = e * s ** (e - 1); m = (~left).to(DT)[:, None]
+            blocks.append(m * (f * g)[:, None] * T)
+            dblocks.append(m * ((f * g)[:, None] * dT + (f * gs - fx * g)[:, None] * T))
         return torch.cat(blocks, 1), torch.cat(dblocks, 1), s, oms, l, al
 
     def fields(self, lam, mu, y, d):
@@ -87,7 +108,8 @@ class Cusp:
     def standard(self, p):
         """factor a with a Theta(y/a) ~ -(0.1/2)|y|^mu; y* in the standard normalisation is a y*."""
         lam, mu = p[0].item(), p[1].item(); al = 1 / (1 + lam)
-        amp = -2 * (al / 2) ** (mu / 2) * p[2:2 + self.nL].sum().item()
+        c = p[2:]; i = self.n0
+        amp = -2 * (al / 2) ** (mu / 2) * (c[:self.nL].sum() + c[i:i + self.nb].sum()).item()     # all blocks with T_k(1) = 1 at y = 0
         return (amp / 0.1) ** (1 / (mu - 1))
 
 
@@ -177,11 +199,30 @@ def operators(cusp, lam, mu, G):
     nL, nR = cusp.nL, cusp.nR
     cont = torch.zeros(cusp.n, dtype=DT, device=G.y.device)
     sg_ = torch.tensor([(-1.0) ** k for k in range(max(nL, nR))], dtype=DT, device=G.y.device)
+    # (the cusp blocks vanish at y*; the far block does not)
     cont[:nL] = sg_[:nL]; cont[nL:nL + nR] = -sg_[:nR]
+    if cusp.nfar:
+        sst = (1 + cusp.yst ** 2) ** (-al / 2); k = torch.arange(cusp.nfar, dtype=DT, device=G.y.device)
+        cont[cusp.n0 + 2 * cusp.nb:] = -sst ** (2 / al) * (-1.0) ** k
     return BTh, BOm, AU, up0, wt, cont
 
 
 WC = 10.0      # weight of the continuity row
+RHO = None     # None, or the imposed ratio A_R/A_L of the one-sided cusp amplitudes (Omega ~ -A |d|^-1/2): one extra row
+WR = 10.0
+
+
+def amp_rows(cusp, lam):
+    """Linear forms aL, aR with A_L = (aL . c) and A_R = (aR . c) up to the common factor r*^beta (1-s*)^(mu/2) sqrt|s'(y*)|/2:
+    Theta = Theta* + F sig + ..., A_L = F_L / (2 sqrt(1-s*)) .., A_R = -F_R / (2 sqrt s*) .., dT_k/dsig(0) = 2 (-1)^(k+1) k^2."""
+    al = 1 / (1 + lam); sst = (1 + cusp.yst ** 2) ** (-al / 2)
+    aL = torch.zeros(cusp.n, dtype=DT, device="cuda"); aR = torch.zeros_like(aL)
+    k = torch.arange(max(cusp.nL, cusp.nR), dtype=DT, device="cuda"); dT = 2 * (-1) ** (k + 1) * k * k
+    aL[:cusp.nL] = dT[:cusp.nL] / (2 * math.sqrt(1 - sst)); aR[cusp.nL:cusp.nL + cusp.nR] = -dT[:cusp.nR] / (2 * math.sqrt(sst))
+    if cusp.nfar:
+        kf_ = torch.arange(cusp.nfar, dtype=DT, device="cuda")
+        aR[cusp.n0 + 2 * cusp.nb:] = -sst ** (2 / al) * 2 * (-1) ** (kf_ + 1) * kf_ * kf_ / (2 * math.sqrt(sst))
+    return aL, aR
 
 
 def residual(cusp, p, G, with_jac=False):
@@ -191,17 +232,21 @@ def residual(cusp, p, G, with_jac=False):
     V = (1 + lam) * G.y - U
     R = (-lam * Th + V * Om) / wt
     u0 = up0 @ c
-    r = torch.cat([R, (WC * (cont @ c)).reshape(1), (-lam + (1 + lam - u0) * mu).reshape(1)])
+    extra, Jx = [], []
+    if RHO is not None:               # A_R - RHO A_L = 0, scaled by A_L (placed before the last two rows)
+        aL, aR = amp_rows(cusp, lam.item()); nrm = (aL @ c).abs()
+        extra = [(WR * (aR @ c - RHO * (aL @ c)) / nrm).reshape(1)]; Jx = [(WR * (aR - RHO * aL) / nrm)[None]]
+    r = torch.cat([R] + extra + [(WC * (cont @ c)).reshape(1), (-lam + (1 + lam - u0) * mu).reshape(1)])
     if not with_jac:
         return r
     Jc = (-lam * BTh + V[:, None] * BOm - Om[:, None] * AU) / wt[:, None]
-    return r, torch.cat([Jc, WC * cont[None], (-mu * up0)[None]])
+    return r, torch.cat([Jc] + Jx + [WC * cont[None], (-mu * up0)[None]])
 
 
-def res_jac(cusp, p, G, step=2e-7):
+def res_jac(cusp, p, G, step=2e-7, free=(0, 1)):
     r, Jc = residual(cusp, p, G, with_jac=True)
     cols = []
-    for k in (0, 1):
+    for k in free:
         e = torch.zeros_like(p); e[k] = step
         f = lambda q: residual(cusp, q, G)
         cols.append(((8 * (f(p + e) - f(p - e)) - (f(p + 2 * e) - f(p - 2 * e))) / (12 * step))[:, None])
