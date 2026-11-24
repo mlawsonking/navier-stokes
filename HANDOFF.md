@@ -925,3 +925,20 @@ gcusp_inner.py -1 0.04 reproduces xi_h = 3.35803 as before)
 - NOT YET VERIFIED (sent back to the agent): smooth-only pin with lam free; that it is not lam_1(a)/lam_2(a) continued
   (peak 251 vs 8 suggests not); march along the family at a = -0.875 through the minimum; second crossing at large peak.
   Until then: candidate new smooth self-similar gCLM profile, not a result.
+
+### 2026-11-24, VERIFIED: a pair of new smooth self-similar gCLM profiles at a = -0.87 (agent; commits a6ba17d, cd47553)
+- Family at a = -0.87 marched in peak 199 .. 1057 (runs/sing_track4a_pk.py): mu = 2 crossings at peak 215.381 and 1021.808
+  (mu_min = 1.9995040 near peak 395). Smooth-only pin (no origin blocks, mu = 2, lam free; checked at a = -1: gives
+  lam_2 = 0.4713242276 vs 0.4713242278):
+      lower: lam = 0.3471535497, peak 215.38,  on = off 8.7e-9
+      upper: lam = 0.3469754655, peak 1021.8,  sup 1.5e-8, off 1.8e-8
+  (coordinator checked the ledger rows sing-track4a-smooth-s215 / -s1022). Omega one-signed on y > 0 (lam_1, lam_2: one
+  sign change); peaks 15x and 70x that of lam_2(a) continued to a = -0.87 (lam 0.35324, peak 13.96, residual 7.6e-4).
+- Fold bracketed: a = -0.88 gives mu_min = 2.000175 (peak ~366, computed on peaks 251..420): no crossing. Fold at
+  a ~ -0.8774 (linear interpolation of mu_min).
+- CAVEATS: the smooth pin was started at the solution (it shows the smooth representation satisfies the equation to
+  1e-8, not a Newton basin); no second-solver check (vorticity-form floor too high at these peaks); "no crossing at
+  a = -0.88" only for peaks 251..420.
+- Meaning: gCLM has smooth unstable self-similar profiles with lam ~ 0.347 for a just above -0.877, born in a fold
+  out of the non-smooth family; they do not exist at a = -1 (CCF). Predicted (speculative): further pairs at larger a
+  from the later mu minima, and infinitely many when mu_c(a) = 2.

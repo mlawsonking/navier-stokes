@@ -37,6 +37,13 @@ We report:
    between 2.00495 and 2.00584 and tends to 2.00577, so it does not return to 2. NOT observed: a turning point of
    lam itself (none up to peak 8386; one prediction of it failed).
 
+5. Away from CCF (a != -1), the same mechanism produces NEW smooth profiles. The exponent mu of the non-smooth
+   family moves with a (d mu_c/da = -0.0180 at a = -1), and its first minimum reaches 2 in a fold near a = -0.877.
+   At a = -0.87 the family contains two smooth profiles, lam = 0.3471535 and 0.3469755, with peaks 215 and 1022,
+   verified with a smooth-only representation (residuals 9e-9, 2e-8). They are distinct from the continuations of
+   the two known unstable profiles. Further pairs, and an infinite sequence where mu_c(a) = 2, are predicted, not
+   computed. [Section to be written.]
+
 Nothing here is a statement about the Navier-Stokes or Euler equations.
 
 ## 1. Equations and normalisation

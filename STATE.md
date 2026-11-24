@@ -1,6 +1,6 @@
 # STATE — read this first (builder / GPU session)
 
-Last updated 2026-11-23 night (no jobs running; family followed to peak 8386, see 2f). Branch `gpu-solver`. This file is the entry point for any future session:
+Last updated 2026-11-24 (see 2g: end profile computed; new smooth gCLM profile pair at a = -0.87). Branch `gpu-solver`. This file is the entry point for any future session:
 what is established, what is only provisional, what is running, how to resume, and what burned us.
 `HANDOFF.md` is the chronological log with the full tables and every withdrawn claim; `runs/README.md`
 lists the scripts and data files.
@@ -237,7 +237,11 @@ READ THIS BEFORE USING ANY sing_track3 NUMBER ABOVE PEAK 75: those were off by u
 - lam - lam_c = sigma(0.112 + 0.053 cos(...)): monotone forever (oscillating slope amplitude 0.087 < 0.112). mu turns.
 - General a (`runs/gcusp_*.py`): w(a) from w tanh(pi w/2) = p cot(pi p/2), p = 1/(1-a); d mu_c/da = -0.0180 at a = -1
   (first-order perturbation, validated on lam_1(a) to 9 digits); SPECULATIVE fold creating new smooth profiles near
-  a = -0.83, peak ~150. Tracker runs/sing_track4a.py being built (agent).
+  a = -0.83 (superseded, see next line).
+- NEW SMOOTH PROFILES (2026-11-24, `runs/sing_track4a.py`, `sing_track4a_pk.py`): at a = -0.87 the non-smooth family has
+  mu = 2 at peak 215.38 and 1021.8; smooth-only pin: lam = 0.3471535497 (on = off 8.7e-9) and 0.3469754655 (1.8e-8).
+  Omega one-signed on y > 0; distinct from lam_1(a), lam_2(a). Fold between a = -0.88 (mu_min 2.000175) and -0.87,
+  about -0.8774. Caveats: pin started at the solution; no second solver. Details: HANDOFF 2026-11-24.
 
 Not established, do not quote: where the unstable a-branch ends. What is known (2026-11-14, late):
 - Data: the branch is followed to a = -0.0712 (lam_1 = -0.34807). The peak of |Omega| is a narrowing
