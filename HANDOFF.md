@@ -913,3 +913,15 @@ gcusp_inner.py -1 0.04 reproduces xi_h = 3.35803 as before)
   lead of the previous entry is withdrawn (it was a model without the non-oscillating sigma term).
 - Open: the A_R = A_L selection and continuity of the singular family are numerical, not proven; asymmetric inner
   problem has no solution near the even one (single resolution), which supports rho_end = 1.
+
+### 2026-11-24, general-a march at fixed peak (agent; commits 5c18e73, 582d01b, 2467db5; runs/sing_track4a.py)
+- Integrated residual with (a+1) Gint, Gint = U Omega - int U' Omega; general-a origin row; far-field C column.
+  Checks: a = -1 peak 152.8 mu 2.004946450 (known 2.00494649); a = -0.99 matches gcusp_astep to 1e-9; a = -0.98 matches
+  the Taylor prediction; on = off 6e-10 .. 9e-9 throughout (tags n153, n251, n317, n400; ignore m*, c134).
+- COMPUTED: at fixed peak 251, mu = 2.000344397 at a = -0.88 and 1.999762390 at a = -0.87 (on = off 8e-9, 9e-9; I checked
+  the ledger rows). So the family at a = -0.874 has a mu = 2 member at peak 251, lam ~ 0.3505. mu_min over the family
+  bracketed to a = -0.90 (2.001372 near peak 317).
+- EXTRAPOLATED: mu_min(a) = 2 at a_f = -0.8766 .. -0.8770, peak ~370: a fold creating a PAIR of smooth profiles there.
+- NOT YET VERIFIED (sent back to the agent): smooth-only pin with lam free; that it is not lam_1(a)/lam_2(a) continued
+  (peak 251 vs 8 suggests not); march along the family at a = -0.875 through the minimum; second crossing at large peak.
+  Until then: candidate new smooth self-similar gCLM profile, not a result.
