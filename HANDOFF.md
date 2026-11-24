@@ -858,3 +858,18 @@ Hypothesis (mine, untested): the O(sigma) coefficient of the inner mode in lam V
 reason), so lam's oscillation is O(sigma^2) and competes with the smooth c2 sigma^2 term. Then lam has turning points
 only if R2 sqrt(1+w^2) > |c2|; the fits straddle 1 (0.5 .. 2.1 depending on window), i.e. undecided. U'(0) behaves
 like lam. If true, P3 and P4(b) failed for a structural reason, and lam may be monotone for all peaks.
+
+### 2026-11-23, literature leads (web agent; LEADS, partly full text, not verified by me)
+- arXiv:2603.25104 (Huang-Tong-Wang) sec. 5.1 / Fig. 5.9: at a = -1, odd-symmetric case, the advection speed has a
+  stagnation point at X = 1 and the explicit profile is Omega = -1_{X>1} |1-X|^(-1/2): ONE-SIDED, exponent 1/(1-a).
+  Closest prior object to our cusp. Ours differs: TWO-sided |y-y*|^(-1/2) at an interior stagnation point, regularised
+  by the inner problem v' = H(1/v), reached as the end of a family. No inner equation, log-periodic exponents,
+  accumulation, or lam_1(a) continuation found there (last few thousand chars unread).
+- arXiv:2511.22819 sec. 2.1.3 (read in HTML): peak gradient "nearly 40" at lam ~ 0.455, persistent non-smooth signal
+  at the origin for all tested lam in [0.455, 0.4713], third unstable profile left open. Consistent with our family;
+  our result answers their open question negatively for this family (mu -> 2.00577, never 2).
+- arXiv:2611.15174 (Kim-Kwon-Shim): cusp formation for b-family / rod / Whitham-type equations; not CCF/gCLM. Not relevant.
+- arXiv:2607.19762 (abstract only): spectral picture of CLM collapse, a >= 0 only. Lushnikov-Silantyev-Siegel JNS 2021
+  (not read). Nothing found on an infinite accumulation of profiles in these models.
+- Net: no prior match found for (i) the non-smooth family, (ii) the two-sided cusp + inner equation, (iii) the
+  log-periodic approach. Weak negative (partial reads). Human check still needed (vtask #400).
